@@ -22,7 +22,17 @@ def load_csv_to_mongo():
                 query_filter = {"id_cliente": id_cliente}
                 update_operation = {"$push": {"polizas": poliza_record}}
                 mongo_collection.update_one(query_filter, update_operation)
-        if file=="resources/vehiculos.csv":
+        elif file == "resources/siniestros.csv":
+            for record in records:
+                # Extract nro_poliza for the query but remove it from the record
+                nro_poliza = record["nro_poliza"]
+                siniestro_record = {k: v for k, v in record.items() if k != "nro_poliza"}
+                
+                # Find the client that has the poliza with this nro_poliza and add siniestro to that poliza
+                query_filter = {"polizas.nro_poliza": nro_poliza}
+                update_operation = {"$push": {"polizas.$.siniestros": siniestro_record}}
+                mongo_collection.update_one(query_filter, update_operation)
+        elif file=="resources/vehiculos.csv":
             for record in records:
                 id_cliente = record["id_cliente"]
                 vehiculo_record = {k: v for k, v in record.items() if k != "id_cliente"}
