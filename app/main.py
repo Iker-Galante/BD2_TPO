@@ -3,9 +3,13 @@ from db import get_mongo_collection
 
 def load_csv_to_mongo():
     mongo_collection = get_mongo_collection()
+    
+    # Clear the collection first to avoid duplicates
+    mongo_collection.delete_many({})
+    
     csv_files = [
         "resources/clientes.csv",
-        "resources/polizas.csv",
+        "resources/polizas.csv", 
         "resources/siniestros.csv",
         "resources/agentes.csv",
         "resources/vehiculos.csv"
@@ -14,35 +18,69 @@ def load_csv_to_mongo():
     for file in csv_files:
         df = pd.read_csv(file)
         records = df.to_dict(orient="records")
-        if file == "resources/polizas.csv":
+        
+        if file == "resources/clientes.csv":
+            # Insert clients first as base documents
+            mongo_collection.insert_many(records)
+            
+        elif file == "resources/polizas.csv":
             for record in records:
                 # Extract id_cliente for the query but remove it from the record
                 id_cliente = record["id_cliente"]
-                poliza_record = {k: v for k, v in record.items() if k != "id_cliente"} #Saco al id del cliente 
-                query_filter = {"id_cliente": id_cliente}
+                poliza_record = {k: v for k, v in record.items() if k != "id_cliente"}
+                
+                # Check if poliza already exists for this client
+                query_filter = {
+                    "id_cliente": id_cliente, 
+                    "polizas.nro_poliza": {"$ne": poliza_record["nro_poliza"]}
+                }
                 update_operation = {"$push": {"polizas": poliza_record}}
                 mongo_collection.update_one(query_filter, update_operation)
+                
         elif file == "resources/siniestros.csv":
             for record in records:
                 # Extract nro_poliza for the query but remove it from the record
                 nro_poliza = record["nro_poliza"]
                 siniestro_record = {k: v for k, v in record.items() if k != "nro_poliza"}
                 
-                # Find the client that has the poliza with this nro_poliza and add siniestro to that poliza
-                query_filter = {"polizas.nro_poliza": nro_poliza}
+                # Check if siniestro already exists for this poliza
+                query_filter = {
+                    "polizas.nro_poliza": nro_poliza,
+                    "polizas.siniestros.id_siniestro": {"$ne": siniestro_record["id_siniestro"]}
+                }
                 update_operation = {"$push": {"polizas.$.siniestros": siniestro_record}}
                 mongo_collection.update_one(query_filter, update_operation)
-        elif file=="resources/vehiculos.csv":
+                
+        elif file == "resources/vehiculos.csv":
             for record in records:
                 id_cliente = record["id_cliente"]
                 vehiculo_record = {k: v for k, v in record.items() if k != "id_cliente"}
-                query_filter = {"id_cliente": id_cliente}
+                
+                # Check if vehiculo already exists for this client
+                query_filter = {
+                    "id_cliente": id_cliente,
+                    "vehiculos.id_vehiculo": {"$ne": vehiculo_record["id_vehiculo"]}
+                }
                 update_operation = {"$push": {"vehiculos": vehiculo_record}}
                 mongo_collection.update_one(query_filter, update_operation)
-        else :
-            mongo_collection.insert_many(records)
+                
+        elif file == "resources/agentes.csv":
+            for record in records:
+                id_agente = record["id_agente"]
+                agente_record = {k: v for k, v in record.items() if k != "id_agente"}
+                
+                # Add agent info to ALL polizas that have this agent using arrayFilters
+                query_filter = {"polizas.id_agente": id_agente}
+                update_operation = {"$set": {"polizas.$[elem].agente": agente_record}}
+                array_filters = [{"elem.id_agente": id_agente}]
+                
+                mongo_collection.update_many(
+                    query_filter, 
+                    update_operation, 
+                    array_filters=array_filters
+                )
 
-        print(f"Inserted {len(records)} records from {file}")
+        print(f"Processed {len(records)} records from {file}")
 
 if __name__ == "__main__":
     load_csv_to_mongo()
