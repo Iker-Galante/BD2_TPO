@@ -22,6 +22,13 @@ def load_csv_to_mongo():
                 query_filter = {"id_cliente": id_cliente}
                 update_operation = {"$push": {"polizas": poliza_record}}
                 mongo_collection.update_one(query_filter, update_operation)
+        if file=="resources/vehiculos.csv":
+            for record in records:
+                id_cliente = record["id_cliente"]
+                vehiculo_record = {k: v for k, v in record.items() if k != "id_cliente"}
+                query_filter = {"id_cliente": id_cliente}
+                update_operation = {"$push": {"vehiculos": vehiculo_record}}
+                mongo_collection.update_one(query_filter, update_operation)
         else :
             mongo_collection.insert_many(records)
 
