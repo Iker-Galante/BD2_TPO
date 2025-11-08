@@ -1,5 +1,5 @@
 import pandas as pd
-from db import get_mongo_collection
+from app.db import get_mongo_collection, get_redis_client
 
 def load_csv_to_mongo():
     mongo_collection = get_mongo_collection()

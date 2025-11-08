@@ -2,47 +2,45 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import get_mongo_collection, get_redis_client
-import json
-from datetime import datetime
+from app.db import get_mongo_collection
+
 
 def get_insured_vehicles_with_client_and_policy():
 
     collection = get_mongo_collection()
     result = []
 
-    vehicles = collection.find({
-        "id_vehiculo": {"$exists": True},
-        "asegurado": True
+    clients = collection.find({
+        "id_cliente": {"$exists": True},
+        "vehiculos": {"$exists": True},
+        "polizas": {"$exists": True}
     })
 
-    for vehicle in vehicles:
-        id_cliente = vehicle["id_cliente"]
+    for client in clients:
+        nombre = client.get("nombre", "")
+        apellido = client.get("apellido", "")
 
-        cliente = collection.find_one({
-            "id_cliente": id_cliente,
-            "nombre": {"$exists": True}
-        })
-        if not cliente:
+        polizas_auto = [
+            p for p in client.get("polizas", [])
+            if p.get("tipo") == "Auto"
+        ]
+        if not polizas_auto:
             continue
 
-        policy = collection.find_one({
-            "id_cliente": id_cliente,
-            "nro_poliza": {"$exists": True},
-            "tipo": "Auto"
-        })
-        if not policy:
-            continue
+        poliza = polizas_auto[0]
 
-        result.append({
-            "id_vehiculo": vehicle["id_vehiculo"],
-            "patente": vehicle["patente"],
-            "cliente": f"{cliente['nombre']} {cliente['apellido']}",
-            "nro_poliza": policy["nro_poliza"],
-            "estado_poliza": policy.get("estado")
-        })
+        for vehiculo in client.get("vehiculos", []):
+            asegurado = vehiculo.get("asegurado")
+            if asegurado in (True, "True", "true", 1):
+                result.append({
+                    "id_vehiculo": vehiculo.get("id_vehiculo"),
+                    "patente": vehiculo.get("patente"),
+                    "cliente": f"{nombre} {apellido}",
+                    "nro_poliza": poliza.get("nro_poliza"),
+                    "estado_poliza": poliza.get("estado")
+                })
 
-    print(f"Found {len(result)} insured vehicles with client and policy:")
+    print(f"Found {len(result)} insured vehicles with client and Auto policy:")
 
     for r in result:
         print(

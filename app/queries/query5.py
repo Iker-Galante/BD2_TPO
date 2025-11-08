@@ -2,41 +2,46 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import get_mongo_collection, get_redis_client
-import json
-from datetime import datetime
+from app.db import get_mongo_collection
 
 
 def get_active_agents_with_assigned_policies_count():
 
     collection = get_mongo_collection()
-    result = []
+    agents = {}
 
-    agents = collection.find({
-        "id_agente": {"$exists": True},
-        "activo": True
+    clients = collection.find({
+        "polizas": {"$exists": True}
     })
 
-    for agent in agents:
-        agent_id = agent["id_agente"]
+    for client in clients:
+        for poliza in client.get("polizas", []):
+            agente_info = poliza.get("agente")
+            id_agente = poliza.get("id_agente")
 
-        policies_count = collection.count_documents({
-            "nro_poliza": {"$exists": True},
-            "id_agente": agent_id
-        })
+            if not agente_info or id_agente is None:
+                continue
 
-        result.append({
-            "id_agente": agent_id,
-            "nombre": agent["nombre"],
-            "apellido": agent["apellido"],
-            "polizas_asignadas": policies_count
-        })
+            if not agente_info.get("activo"):
+                continue
+
+            if id_agente not in agents:
+                agents[id_agente] = {
+                    "id_agente": id_agente,
+                    "nombre": agente_info.get("nombre"),
+                    "apellido": agente_info.get("apellido"),
+                    "polizas_asignadas": 0
+                }
+
+            agents[id_agente]["polizas_asignadas"] += 1
+
+    result = list(agents.values())
 
     print("Active agents with assigned policies count:")
 
     for r in result:
         print(
-            f"Agente activo {r['id_agente']} - {r['nombre']} {r['apellido']}: "
+            f"Agente {r['id_agente']} - {r['nombre']} {r['apellido']}: "
             f"{r['polizas_asignadas']} pólizas"
         )
 

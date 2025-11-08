@@ -2,45 +2,32 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from db import get_mongo_collection, get_redis_client
-import json
-from datetime import datetime
+from app.db import get_mongo_collection
+
 
 def get_open_claims():
 
     collection = get_mongo_collection()
     result = []
 
-    open_claims = collection.find({
-        "id_siniestro": {"$exists": True},
-        "estado": "Abierto"
+    clients = collection.find({
+        "id_cliente": {"$exists": True},
+        "polizas": {"$exists": True}
     })
 
-    for claim in open_claims:
-        nro_poliza = claim["nro_poliza"]
+    for client in clients:
+        nombre = client.get("nombre", "")
+        apellido = client.get("apellido", "")
 
-        poliza = collection.find_one({
-            "nro_poliza": nro_poliza,
-            "id_cliente": {"$exists": True}
-        })
-        if not poliza:
-            continue
-
-        id_cliente = poliza["id_cliente"]
-
-        cliente = collection.find_one({
-            "id_cliente": id_cliente,
-            "nombre": {"$exists": True}
-        })
-        if not cliente:
-            continue
-
-        result.append({
-            "id_siniestro": claim["id_siniestro"],
-            "tipo": claim["tipo"],
-            "monto_estimado": claim["monto_estimado"],
-            "cliente": f"{cliente['nombre']} {cliente['apellido']}"
-        })
+        for poliza in client.get("polizas", []):
+            for siniestro in poliza.get("siniestros", []):
+                if siniestro.get("estado") == "Abierto":
+                    result.append({
+                        "id_siniestro": siniestro.get("id_siniestro"),
+                        "tipo": siniestro.get("tipo"),
+                        "monto_estimado": siniestro.get("monto_estimado"),
+                        "cliente": f"{nombre} {apellido}"
+                    })
 
     print(f"Found {len(result)} open claims info:")
     for r in result:
