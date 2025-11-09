@@ -19,20 +19,28 @@ def get_agents_with_claims_count():
             id_agente = poliza.get("id_agente")
             siniestros = poliza.get("siniestros", [])
 
-            if id_agente is None or not siniestros:
+            if not siniestros:
+                continue
+
+            if id_agente is None:
+                continue
+
+            try:
+                id_agente_int = int(id_agente)
+            except (TypeError, ValueError):
                 continue
 
             agente_info = poliza.get("agente", {})
 
-            if id_agente not in agents:
-                agents[id_agente] = {
-                    "id_agente": id_agente,
+            if id_agente_int not in agents:
+                agents[id_agente_int] = {
+                    "id_agente": id_agente_int,
                     "nombre": agente_info.get("nombre"),
                     "apellido": agente_info.get("apellido"),
                     "siniestros_asociados": 0
                 }
 
-            agents[id_agente]["siniestros_asociados"] += len(siniestros)
+            agents[id_agente_int]["siniestros_asociados"] += len(siniestros)
 
     result = list(agents.values())
 
