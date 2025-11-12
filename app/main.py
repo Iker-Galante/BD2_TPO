@@ -1,4 +1,10 @@
 import pandas as pd
+import sys
+import os
+
+# Add the parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from app.db import get_mongo_collection, get_redis_client
 
 def load_csv_to_mongo():

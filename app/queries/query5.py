@@ -3,10 +3,34 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.db import get_mongo_collection
+from app.cache import RedisCache
 
 
-def get_active_agents_with_assigned_policies_count():
-
+def get_active_agents_with_assigned_policies_count(use_cache=True):
+    """
+    Get active agents with policy count using Redis cache
+    """
+    cache_key = "query5:active_agents_policies"
+    cache = RedisCache()
+    
+    # Try cache first
+    if use_cache:
+        cached_result = cache.get(cache_key)
+        if cached_result is not None:
+            print(f"✓ Cache HIT - Retrieved {len(cached_result)} agents from Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)\n")
+            
+            print("Active agents with assigned policies count:")
+            for r in cached_result:
+                print(
+                    f"Agente {r['id_agente']} - {r['nombre']} {r['apellido']}: "
+                    f"{r['polizas_asignadas']} pólizas"
+                )
+            
+            return cached_result
+    
+    # Cache miss - query MongoDB
+    print("✗ Cache MISS - Querying MongoDB...")
     collection = get_mongo_collection()
     agents = {}
 
@@ -36,6 +60,11 @@ def get_active_agents_with_assigned_policies_count():
             agents[id_agente]["polizas_asignadas"] += 1
 
     result = list(agents.values())
+    
+    # Store in cache (10 minutes - agent data changes less frequently)
+    if use_cache:
+        cache.set(cache_key, result, ttl=600)
+        print(f"✓ Stored {len(result)} agents in cache (TTL: 600 seconds)\n")
 
     print("Active agents with assigned policies count:")
 
