@@ -30,32 +30,26 @@ def get_clients_without_active_policies(use_cache=True):
     # Cache miss - query MongoDB
     print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
-    result = []
 
-    clients = collection.find({
-        "id_cliente": {"$exists": True},
-        "nombre": {"$exists": True}
-    })
-
-    for client in clients:
-        polizas = client.get("polizas", [])
-        
-        # Check if client has any active policy
-        has_active_policy = any(
-            p.get("estado") == "Activa" 
-            for p in polizas
-        )
-        
-        if not has_active_policy:
-            result.append({
-                "id_cliente": client["id_cliente"],
-                "nombre": client["nombre"],
-                "apellido": client["apellido"]
-            })
+    clients = collection.aggregate([{
+        "$match": {
+            "polizas": {
+                "$elemMatch": {
+                    "estado": {"$ne": "Activa"}
+                }
+            }
+        }
+    }, {"$project": {
+            "id_cliente": "$id_cliente",
+            "nombre": "$nombre",
+            "apellido": "$apellido"
+        }
+    }])
+    result = [client for client in clients]
     
     # Store in cache (5 minutes)
     if use_cache:
-        cache.set(cache_key, result, ttl=300)
+        cache.set(cache_key, clients, ttl=300)
         print(f"✓ Almacenados {len(result)} clientes en caché (TTL: 300 segundos)\n")
 
     print(f"Se encontraron {len(result)} clientes sin pólizas activas:")
