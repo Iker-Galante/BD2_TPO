@@ -10,85 +10,6 @@ Sistema de gestión de una aseguradora implementado con MongoDB y Redis, que per
 - **15 Consultas y servicios**: Desde lecturas simples hasta operaciones ABM completas
 - **Cache Manager**: Herramienta para monitorear y gestionar el caché
 
-## 🚀 Inicio Rápido
-
-```powershell
-# 1. Crear y activar entorno virtual (recomendado)
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# 2. Iniciar contenedores Docker
-docker-compose up -d
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Cargar datos
-python app/main.py
-
-# 5. Ejecutar consultas - Opción A: Script helper (recomendado)
-python run_query.py 1
-
-# 5. Ejecutar consultas - Opción B: Directamente
-python app/queries/query1.py
-```
-
-### 💡 Entorno Virtual (Recomendado)
-
-**¿Por qué usar un entorno virtual?**
-- ✅ No necesitas configurar PYTHONPATH manualmente
-- ✅ Aísla las dependencias del proyecto
-- ✅ Evita conflictos con otras instalaciones de Python
-- ✅ Más limpio y profesional
-
-**Crear y activar:**
-```powershell
-# Crear entorno virtual (solo una vez)
-python -m venv .venv
-
-# Activar entorno virtual (cada vez que abras una terminal)
-.\.venv\Scripts\Activate.ps1
-
-# Deberías ver (.venv) al inicio de tu prompt
-
-# Instalar dependencias
-pip install -r requirements.txt
-```
-
-**Desactivar cuando termines:**
-```powershell
-deactivate
-```
-
-### 💡 Script Helper
-
-Para facilitar la ejecución de consultas, se incluye un script `run_query.py`:
-
-```powershell
-# Ver lista de consultas disponibles
-python run_query.py
-
-# Ejecutar una consulta específica (ejemplo: query 1)
-python run_query.py 1
-
-# Ejecutar otra consulta (ejemplo: query 7)
-python run_query.py 7
-```
-
-##  Tabla de Contenidos
-
-- [Características Principales](#características-principales)
-- [Inicio Rápido](#inicio-rápido)
-- [Requisitos Previos](#requisitos-previos)
-- [Instalación](#instalación)
-- [Configuración del Proyecto](#configuración-del-proyecto)
-- [Carga de Datos](#carga-de-datos)
-- [Consultas Disponibles](#consultas-disponibles)
-- [Servicios ABM](#servicios-abm)
-- [Redis Caching](#redis-caching)
-- [Cache Manager](#cache-manager)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-
 ## 🔧 Requisitos Previos
 
 - Python 3.8 o superior
@@ -186,8 +107,6 @@ Este script:
 Recupera información de clientes activos en el sistema.
 
 ```powershell
-python run_query.py 1
-# O directamente:
 python app/queries/query1.py
 ```
 
@@ -196,7 +115,7 @@ python app/queries/query1.py
 Lista todos los siniestros con estado "Abierto".
 
 ```powershell
-python run_query.py 2
+python app/queries/query2.py
 ```
 
 ### Query 3: Vehículos asegurados con su cliente y póliza
@@ -556,21 +475,11 @@ Si los puertos 27017 o 6379 están en uso:
 1. Detener los servicios que los están usando
 2. O modificar el `docker-compose.yml` para usar otros puertos
 
-### Problemas con PowerShell Execution Policy
-
-Si no puedes activar el entorno virtual:
-```powershell
-# Ejecutar como administrador
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
 
 ## 👥 Autores
 
 Proyecto desarrollado para la materia Base de Datos 2 - ITBA
 
-## 📄 Licencia
-
-Este proyecto es parte de un trabajo práctico académico.
 
 ## ⚡ Redis Caching
 
@@ -659,4 +568,3 @@ Performance Improvement:
   Speedup factor: 52.0x faster
 ```
 
-Este proyecto es parte de un trabajo práctico académico.
