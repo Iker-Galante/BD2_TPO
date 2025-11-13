@@ -1,8 +1,9 @@
-from app.db import get_mongo_collection
-from app.cache import RedisCache
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from app.db import get_mongo_collection
+from app.cache import RedisCache
 
 def view_active_policies(use_cache=True):
     """

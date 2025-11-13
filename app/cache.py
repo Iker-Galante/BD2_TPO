@@ -186,31 +186,8 @@ def get_cache_stats():
 
 # Example usage functions
 if __name__ == "__main__":
-    print("=== Redis Cache Helper Demo ===\n")
-    
-    # Test basic cache operations
-    cache = RedisCache()
-    
-    # Store some test data
-    test_data = {"name": "Test", "value": 123}
-    cache.set("test:key1", test_data, ttl=60)
-    print("Stored test data")
-    
-    # Retrieve it
-    retrieved = cache.get("test:key1")
-    print(f"Retrieved: {retrieved}")
-    
-    # Check TTL
-    ttl = cache.get_ttl("test:key1")
-    print(f"TTL: {ttl} seconds")
-    
-    # Get stats
+    print("=== Redis Cache Stats ===")
     stats = get_cache_stats()
     if stats:
-        print(f"\nCache Stats:")
-        print(f"  Total keys: {stats['total_keys']}")
-        print(f"  Hit rate: {stats['hit_rate_percent']}%")
-    
-    # Clean up
-    cache.delete("test:key1")
-    print("\nTest key deleted")
+        for k, v in stats.items():
+            print(f"{k}: {v}")
