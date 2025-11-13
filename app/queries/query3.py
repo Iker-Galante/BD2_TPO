@@ -78,5 +78,4 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 3 ===\n")
     get_insured_vehicles_with_client_and_policy()

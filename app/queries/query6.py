@@ -66,5 +66,4 @@ def get_expired_policies(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 6 ===\n")
     get_expired_policies()

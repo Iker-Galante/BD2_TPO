@@ -84,5 +84,4 @@ def get_clients_with_multiple_insured_vehicles(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 11 ===\n")
     get_clients_with_multiple_insured_vehicles()

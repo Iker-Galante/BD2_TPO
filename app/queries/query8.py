@@ -81,5 +81,4 @@ def get_accident_claims_2025(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 8 ===\n")
     get_accident_claims_2025()

@@ -38,5 +38,4 @@ def get_top10_clients_by_total_coverage():
 
 
 if __name__ == "__main__":
-    print("=== MongoDB + Redis Query 7 ===\n")
     get_top10_clients_by_total_coverage()

@@ -470,13 +470,14 @@ def interactive_abm():
         elif operation == "4":
             # READ
             print("\n--- CONSULTAR CLIENTE ---")
-            try:
-                id_cliente = int(input("ID del cliente a consultar: "))
-            except ValueError:
-                print("❌ Error: ID debe ser un número")
+            dni_input = input("DNI del cliente a consultar: ").strip()
+            if not dni_input.isdigit():
+                print("❌ Error: DNI debe ser numérico")
                 continue
             
-            client = read_client(id_cliente)
+            dni = int(dni_input)
+            
+            client = read_client(dni=dni)
             if 'error' in client:
                 print(f"\n❌ {client['error']}")
             else:

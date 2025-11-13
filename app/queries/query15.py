@@ -51,7 +51,7 @@ def issue_new_policy(policy_data):
         policy_data: Dictionary with policy information
         Required fields: dni_cliente, tipo, fecha_inicio, fecha_fin, 
                         prima_mensual, cobertura_total, matricula_agente, estado
-        Optional fields: deducible, nro_poliza (auto-generated if not provided)
+        Optional fields: nro_poliza (auto-generated if not provided)
     
     Returns:
         Success message or error
@@ -172,9 +172,6 @@ def issue_new_policy(policy_data):
         "estado": policy_data['estado'],
         "siniestros": []
     }
-    
-    if 'deducible' in policy_data:
-        policy_record['deducible'] = policy_data['deducible']
     
     # 10. Insert policy into client's polizas array
     try:
@@ -419,8 +416,6 @@ def interactive_issue_policy():
         print(f"Período: {fecha_inicio} - {fecha_fin}")
         print(f"Prima mensual: ${prima_mensual:,.2f}")
         print(f"Cobertura total: ${cobertura_total:,.2f}")
-        if deducible:
-            print(f"Deducible: ${deducible:,.2f}")
         print(f"Estado: {estado}")
         print("="*60)
         
@@ -443,8 +438,6 @@ def interactive_issue_policy():
             "estado": estado
         }
         
-        if deducible:
-            policy_data["deducible"] = deducible
         
         # Issue the policy
         print("\nEmitiendo póliza...")

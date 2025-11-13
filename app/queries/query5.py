@@ -78,5 +78,4 @@ def get_active_agents_with_assigned_policies_count(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 5 ===\n")
     get_active_agents_with_assigned_policies_count()

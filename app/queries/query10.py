@@ -76,5 +76,4 @@ def get_suspended_policies(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 10 ===\n")
     get_suspended_policies()

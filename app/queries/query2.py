@@ -68,5 +68,4 @@ def get_open_claims(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 2 ===\n")
     get_open_claims()

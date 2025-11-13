@@ -84,5 +84,4 @@ def get_agents_with_claims_count(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 12 ===\n")
     get_agents_with_claims_count()

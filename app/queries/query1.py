@@ -24,10 +24,8 @@ def get_active_clients(use_cache=True):
             print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)")
             
             # Print summary
-            for client in cached_result[:5]:  # Show first 5
+            for client in cached_result:  # Show first 5
                 print(f"  - {client['nombre']} {client['apellido']} (ID: {client['id_cliente']}) - {client['email']}")
-            if len(cached_result) > 5:
-                print(f"  ... y {len(cached_result) - 5} más")
             
             return cached_result
     

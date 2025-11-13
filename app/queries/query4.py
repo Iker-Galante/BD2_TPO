@@ -66,5 +66,4 @@ def get_clients_without_active_policies(use_cache=True):
 
 
 if __name__ == "__main__":
-    print("=== MongoDB Query 4 ===\n")
     get_clients_without_active_policies()
