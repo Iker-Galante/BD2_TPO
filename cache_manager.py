@@ -127,7 +127,6 @@ def show_menu():
 
 
 def main():
-    """Main menu loop"""
     while True:
         show_menu()
         
@@ -167,7 +166,7 @@ def main():
 
 
 if __name__ == "__main__":
-    print("\n🚀 Redis Cache Management Utility\n")
+    print("\nRedis Cache Management Utility\n")
     
     # Quick stats on startup
     stats = get_cache_stats()
@@ -176,7 +175,7 @@ if __name__ == "__main__":
         print(f"Total Keys: {stats['total_keys']}")
         print(f"Hit Rate: {stats['hit_rate_percent']}%")
     else:
-        print("⚠️  Could not connect to Redis. Make sure Docker containers are running.")
+        print("Could not connect to Redis. Make sure Docker containers are running.")
         sys.exit(1)
     
     main()

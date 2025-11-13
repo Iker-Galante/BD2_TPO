@@ -156,9 +156,9 @@
 - **Member**: `{id_cliente}|{nombre} {apellido}` (string)
 
 
-## 📝 Documentación
+## Documentación
 
-✅ **README.md completo** con:
+ **README.md completo** con:
 - Guía de inicio rápido
 - Instalación paso a paso
 - Descripción de cada consulta
@@ -168,7 +168,7 @@
 - Modelo de datos
 
 
-## 🎯 Características Destacadas
+##  Características Destacadas
 
 1. **Arquitectura embebida**: Pólizas, siniestros y vehículos embebidos en el documento del cliente
 2. **Validaciones robustas**: Todas las operaciones de escritura incluyen validaciones completas
@@ -176,7 +176,7 @@
 4. **Soft delete**: Opción de eliminación lógica para mantener historial
 5. **Documentación completa**: README detallado con ejemplos prácticos
 
-## 🔜 Posibles Mejoras Futuras
+##  Posibles Mejoras Futuras
 
 - Agregar índices en MongoDB para mejorar performance
 - Implementar API REST con FastAPI o Flask para ayudar con front

@@ -2,7 +2,7 @@
 
 Sistema de gestión de una aseguradora implementado con MongoDB y Redis, que permite consultar información sobre clientes, pólizas, vehículos, agentes y siniestros.
 
-## ⚡ Características Principales
+## Características Principales
 
 - **MongoDB**: Base de datos principal con documentos embebidos
 - **Redis**: Capa de caché para optimización de consultas (30-100x más rápido)
@@ -16,7 +16,7 @@ Sistema de gestión de una aseguradora implementado con MongoDB y Redis, que per
 - Docker y Docker Compose
 - Git (opcional)
 
-## 📦 Instalación
+## Instalación
 
 ### 1. Clonar el repositorio (si corresponde)
 
@@ -48,7 +48,7 @@ Las dependencias incluyen:
 - `redis`: Cliente de Redis para Python
 - `pandas`: Procesamiento de datos CSV
 
-## 🚀 Configuración del Proyecto
+## Configuración del Proyecto
 
 ### 1. Iniciar contenedores de Docker
 
@@ -76,7 +76,7 @@ Deberías ver dos contenedores: `my_mongo` y `my_redis`
 docker-compose down
 ```
 
-## 📊 Carga de Datos
+## Carga de Datos
 
 ### Cargar datos desde los archivos CSV
 
@@ -100,7 +100,7 @@ Este script:
 3. Asocia pólizas, siniestros, vehículos y agentes a cada cliente
 4. Construye un índice en Redis con el top de clientes por cobertura total
 
-## 📝 Consultas Disponibles
+## Consultas Disponibles
 
 ### Query 1: Clientes activos con sus pólizas vigentes
 
@@ -198,7 +198,7 @@ Muestra agentes con el conteo de siniestros en sus pólizas.
 python app/queries/query12.py
 ```
 
-## 🔨 Servicios ABM
+## Servicios ABM
 
 ### Query 13: ABM (Alta, Baja, Modificación) de Clientes
 
@@ -357,7 +357,7 @@ BD2_TPO/
 └── README.md                    # Este archivo
 ```
 
-## 🗄️ Modelo de Datos
+## Modelo de Datos
 
 ### Estructura de documentos en MongoDB
 
@@ -424,7 +424,7 @@ Redis se utiliza para almacenar un sorted set con los clientes ordenados por cob
 - **Score**: Cobertura total
 - **Member**: `{id_cliente}|{nombre} {apellido}`
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Error: "No module named 'app'" o "No module named 'pymongo'"
 
@@ -476,12 +476,12 @@ Si los puertos 27017 o 6379 están en uso:
 2. O modificar el `docker-compose.yml` para usar otros puertos
 
 
-## 👥 Autores
+## Autores
 
 Proyecto desarrollado para la materia Base de Datos 2 - ITBA
 
 
-## ⚡ Redis Caching
+## Redis Caching
 
 El sistema implementa una capa de caché con Redis para mejorar significativamente el rendimiento de las consultas.
 

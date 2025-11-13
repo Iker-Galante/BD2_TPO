@@ -1,10 +1,10 @@
 # Estrategia de Caché con Redis - Guía de Implementación
 
-## 📚 Descripción General
+## Descripción General
 
 Este proyecto implementa una **capa de caché con Redis** para mejorar significativamente el rendimiento de las consultas. MongoDB se utiliza para la consistencia y persistencia de datos, mientras que Redis sirve como caché de alta velocidad.
 
-## 🎯 Arquitectura
+## Arquitectura
 
 ```
 ┌─────────────┐
@@ -56,7 +56,7 @@ Este proyecto implementa una **capa de caché con Redis** para mejorar significa
 | **Query 14** | Crear/Actualizar Siniestro | `query2:*`, `query8:*`, `query12:*` |
 | **Query 15** | Emitir Póliza | `query4:*`, `query5:*`, `query7:*`, `query9:*` |
 
-## 🚀 Ejemplos de Uso
+## Ejemplos de Uso
 
 ### Usar Consultas con Caché
 
@@ -90,7 +90,7 @@ Encontrados 147 clientes activos:
   ...
 ```
 
-## 🛠️ Gestión del Caché
+## Gestión del Caché
 
 ### Usar la Herramienta Cache Manager
 
@@ -132,7 +132,7 @@ invalidate_cache_pattern("query1:*")
 invalidate_cache_pattern("query*")  # Todas las consultas
 ```
 
-## 🔄 Estrategia de Invalidación de Caché
+## Estrategia de Invalidación de Caché
 
 ### Patrón Write-Through
 
@@ -162,7 +162,7 @@ def create_client(client_data):
 | Póliza emitida | `query4:*`, `query5:*`, `query7:*`, `query9:*` |
 | Cualquier operación de eliminación | `query*` (todos los cachés) |
 
-## 📊 Guías de TTL (Time-To-Live)
+## Guías de TTL (Time-To-Live)
 
 ### Elegir un TTL Apropiado
 
@@ -186,7 +186,7 @@ cache.set(cache_key, result, ttl=120)  # 2 minutos
 cache.set(cache_key, result, ttl=600)  # 10 minutos
 ```
 
-## 🔍 Monitoreo del Rendimiento del Caché
+## Monitoreo del Rendimiento del Caché
 
 ### Ver Estadísticas
 
@@ -226,25 +226,25 @@ Encontradas 3 consultas cacheadas:
 
 ## 🎓 Mejores Prácticas
 
-### ✅ QUÉ HACER
+### QUÉ HACER
 
-- ✅ Usar caché para **consultas de lectura intensiva**
-- ✅ Establecer **TTL apropiado** basado en la volatilidad de los datos
-- ✅ **Invalidar caché** cuando los datos relacionados cambien
-- ✅ Monitorear **tasas de aciertos** y ajustar el TTL en consecuencia
-- ✅ Usar **claves de caché descriptivas** con patrones
-- ✅ Manejar **errores de conexión a Redis** con elegancia
+- Usar caché para **consultas de lectura intensiva**
+- Establecer **TTL apropiado** basado en la volatilidad de los datos
+- **Invalidar caché** cuando los datos relacionados cambien
+- Monitorear **tasas de aciertos** y ajustar el TTL en consecuencia
+- Usar **claves de caché descriptivas** con patrones
+- Manejar **errores de conexión a Redis** con elegancia
 
-### ❌ QUÉ NO HACER
+### QUÉ NO HACER
 
-- ❌ Cachear datos que cambian cada segundo
-- ❌ Establecer TTL demasiado largo para datos dinámicos
-- ❌ Olvidar invalidar el caché en escrituras
-- ❌ Cachear conjuntos de resultados muy grandes (>10MB)
-- ❌ Usar caché para requisitos críticos de consistencia
-- ❌ Depender únicamente del caché (siempre tener fallback a MongoDB)
+- Cachear datos que cambian cada segundo
+- Establecer TTL demasiado largo para datos dinámicos
+- Olvidar invalidar el caché en escrituras
+- Cachear conjuntos de resultados muy grandes (>10MB)
+- Usar caché para requisitos críticos de consistencia
+- Depender únicamente del caché (siempre tener fallback a MongoDB)
 
-## 🧪 Pruebas de Rendimiento del Caché
+##  Pruebas de Rendimiento del Caché
 
 ### Ejecutar Prueba de Rendimiento
 
@@ -271,7 +271,7 @@ Mejora de Rendimiento:
   Factor de aceleración: 52.0x más rápido
 ```
 
-## 🔧 Solución de Problemas
+##  Solución de Problemas
 
 ### El Caché No Funciona
 
@@ -302,7 +302,7 @@ Mejora de Rendimiento:
 2. Verificar que la `maxmemory-policy` de Redis permita expiración
 3. Usar `cache.get_ttl(key)` para depurar
 
-## 📈 Consideraciones de Escalabilidad
+##  Consideraciones de Escalabilidad
 
 ### Cuándo Escalar
 
@@ -323,12 +323,12 @@ Mejora de Rendimiento:
 
 ### Beneficios Clave
 
-✅ **30-100x más rápido** tiempos de respuesta de consultas  
-✅ **Carga reducida en MongoDB** para operaciones de lectura  
-✅ **Invalidación automática** en cambios de datos  
-✅ **Configuración flexible de TTL**  
-✅ **Monitoreo fácil** con cache manager  
-✅ **Degradación elegante** si Redis falla  
+**30-100x más rápido** tiempos de respuesta de consultas  
+**Carga reducida en MongoDB** para operaciones de lectura  
+**Invalidación automática** en cambios de datos  
+**Configuración flexible de TTL**  
+**Monitoreo fácil** con cache manager  
+**Degradación elegante** si Redis falla  
 
 ### Comandos Rápidos
 
