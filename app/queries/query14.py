@@ -197,43 +197,228 @@ def get_claims_by_policy(nro_poliza):
     }
 
 
-# Example usage and testing
+def interactive_abm():
+    """
+    Interactive terminal-based system for sinister management (Alta de Siniestros)
+    """
+    print("\n" + "="*60)
+    print("     SISTEMA DE GESTIÓN DE SINIESTROS (Alta de Siniestros)")
+    print("="*60 + "\n")
+    
+    while True:
+        print("\n¿Qué operación desea realizar?")
+        print("1. Crear nuevo siniestro (Alta)")
+        print("2. Consultar siniestros de una póliza")
+        print("3. Actualizar estado de siniestro")
+        print("4. Salir")
+        
+        operation = input("\nIngrese el número de la operación (1-4): ").strip()
+        
+        if operation == "1":
+            # CREATE CLAIM
+            print("\n--- CREAR NUEVO SINIESTRO ---")
+            claim_data = {}
+            
+            # Get policy number first and validate it exists
+            nro_poliza = input("Número de Póliza (*): ").strip()
+            
+            # Validate that the policy exists
+            collection = get_mongo_collection()
+            policy_exists = collection.find_one({"polizas.nro_poliza": nro_poliza})
+            
+            if not policy_exists:
+                print(f"\n❌ Error: La póliza '{nro_poliza}' no existe en el sistema")
+                print("   No es posible crear el siniestro sin una póliza válida.")
+                continue
+            
+            print(f"✓ Póliza '{nro_poliza}' encontrada")
+            claim_data['nro_poliza'] = nro_poliza
+            
+            # Get claim ID
+            try:
+                claim_data['id_siniestro'] = int(input("ID Siniestro (*): "))
+            except ValueError:
+                print("❌ Error: ID debe ser un número")
+                continue
+            
+            # Get claim type
+            print("\nTipo de siniestro:")
+            print("1. Accidente")
+            print("2. Robo")
+            print("3. Incendio")
+            print("4. Danio")
+            print("5. Otro")
+            tipo_option = input("Seleccione el tipo (1-5): ").strip()
+            tipo_map = {
+                "1": "Accidente",
+                "2": "Robo",
+                "3": "Incendio",
+                "4": "Danio",
+                "5": "Otro"
+            }
+            if tipo_option not in tipo_map:
+                print("❌ Error: Opción inválida")
+                continue
+            claim_data['tipo'] = tipo_map[tipo_option]
+            
+            # Get date
+            fecha = input("Fecha del siniestro (DD/MM/YYYY) (*): ").strip()
+            claim_data['fecha'] = fecha
+            
+            # Get estimated amount
+            try:
+                claim_data['monto_estimado'] = float(input("Monto estimado (*): "))
+            except ValueError:
+                print("❌ Error: Monto debe ser un número")
+                continue
+            
+            # Get status
+            print("\nEstado del siniestro:")
+            print("1. Abierto")
+            print("2. En Proceso")
+            print("3. Cerrado")
+            print("4. Rechazado")
+            estado_option = input("Seleccione el estado (1-4, por defecto 1-Abierto): ").strip() or "1"
+            estado_map = {
+                "1": "Abierto",
+                "2": "En Proceso",
+                "3": "Cerrado",
+                "4": "Rechazado"
+            }
+            if estado_option not in estado_map:
+                print("❌ Error: Opción inválida")
+                continue
+            claim_data['estado'] = estado_map[estado_option]
+            
+            # Get description (optional)
+            descripcion = input("Descripción (opcional): ").strip()
+            if descripcion:
+                claim_data['descripcion'] = descripcion
+            
+            # Confirm
+            print("\n--- DATOS DEL SINIESTRO A CREAR ---")
+            print(f"Póliza: {claim_data['nro_poliza']}")
+            print(f"ID Siniestro: {claim_data['id_siniestro']}")
+            print(f"Tipo: {claim_data['tipo']}")
+            print(f"Fecha: {claim_data['fecha']}")
+            print(f"Monto estimado: ${claim_data['monto_estimado']}")
+            print(f"Estado: {claim_data['estado']}")
+            if 'descripcion' in claim_data:
+                print(f"Descripción: {claim_data['descripcion']}")
+            
+            confirm = input("\n¿Confirmar creación? (S/n): ").strip().lower()
+            if confirm != 'n':
+                result = create_claim(claim_data)
+                if 'error' in result:
+                    print(f"\n❌ Error: {result['error']}")
+                else:
+                    print(f"\n✓ Siniestro creado exitosamente!")
+        
+        elif operation == "2":
+            # GET CLAIMS BY POLICY
+            print("\n--- CONSULTAR SINIESTROS DE UNA PÓLIZA ---")
+            nro_poliza = input("Número de Póliza: ").strip()
+            
+            result = get_claims_by_policy(nro_poliza)
+            if 'error' in result:
+                print(f"\n❌ {result['error']}")
+            else:
+                print(f"\n--- SINIESTROS DE PÓLIZA {result['nro_poliza']} ---")
+                print(f"Cliente: {result['cliente']}")
+                print(f"Total de siniestros: {len(result['siniestros'])}")
+                
+                if result['siniestros']:
+                    print("\nDetalle:")
+                    for s in result['siniestros']:
+                        print(f"\n  ID: {s.get('id_siniestro')}")
+                        print(f"  Tipo: {s.get('tipo')}")
+                        print(f"  Fecha: {s.get('fecha')}")
+                        print(f"  Monto estimado: ${s.get('monto_estimado')}")
+                        print(f"  Estado: {s.get('estado')}")
+                        if s.get('descripcion'):
+                            print(f"  Descripción: {s.get('descripcion')}")
+                        if s.get('monto_final'):
+                            print(f"  Monto final: ${s.get('monto_final')}")
+                        if s.get('fecha_resolucion'):
+                            print(f"  Fecha resolución: {s.get('fecha_resolucion')}")
+                else:
+                    print("\n  No hay siniestros registrados para esta póliza.")
+        
+        elif operation == "3":
+            # UPDATE CLAIM STATUS
+            print("\n--- ACTUALIZAR ESTADO DE SINIESTRO ---")
+            nro_poliza = input("Número de Póliza: ").strip()
+            
+            try:
+                id_siniestro = int(input("ID del Siniestro: "))
+            except ValueError:
+                print("❌ Error: ID debe ser un número")
+                continue
+            
+            print("\nNuevo estado:")
+            print("1. Abierto")
+            print("2. En Proceso")
+            print("3. Cerrado")
+            print("4. Rechazado")
+            estado_option = input("Seleccione el nuevo estado (1-4): ").strip()
+            estado_map = {
+                "1": "Abierto",
+                "2": "En Proceso",
+                "3": "Cerrado",
+                "4": "Rechazado"
+            }
+            if estado_option not in estado_map:
+                print("❌ Error: Opción inválida")
+                continue
+            nuevo_estado = estado_map[estado_option]
+            
+            # Optional: monto final
+            monto_final = None
+            monto_input = input("Monto final (opcional, Enter para omitir): ").strip()
+            if monto_input:
+                try:
+                    monto_final = float(monto_input)
+                except ValueError:
+                    print("❌ Error: Monto debe ser un número")
+                    continue
+            
+            # Optional: fecha resolución
+            fecha_resolucion = None
+            fecha_input = input("Fecha resolución (DD/MM/YYYY, opcional, Enter para omitir): ").strip()
+            if fecha_input:
+                fecha_resolucion = fecha_input
+            
+            # Confirm
+            print("\n--- ACTUALIZACIÓN A REALIZAR ---")
+            print(f"Póliza: {nro_poliza}")
+            print(f"ID Siniestro: {id_siniestro}")
+            print(f"Nuevo estado: {nuevo_estado}")
+            if monto_final:
+                print(f"Monto final: ${monto_final}")
+            if fecha_resolucion:
+                print(f"Fecha resolución: {fecha_resolucion}")
+            
+            confirm = input("\n¿Confirmar actualización? (S/n): ").strip().lower()
+            if confirm != 'n':
+                result = update_claim_status(
+                    nro_poliza=nro_poliza,
+                    id_siniestro=id_siniestro,
+                    nuevo_estado=nuevo_estado,
+                    monto_final=monto_final,
+                    fecha_resolucion=fecha_resolucion
+                )
+                if 'error' in result:
+                    print(f"\n❌ Error: {result['error']}")
+                else:
+                    print(f"\n✓ Siniestro actualizado exitosamente!")
+        
+        elif operation == "4":
+            print("\n¡Hasta luego!")
+            break
+        
+        else:
+            print("\n❌ Opción inválida. Por favor seleccione 1-4.")
+
+
 if __name__ == "__main__":
-    print("=== Gestión de Siniestros (Alta de Siniestros) ===\n")
-    
-    # Test 1: Create a new claim
-    print("1. Creando un nuevo siniestro...")
-    new_claim = {
-        "nro_poliza": 1,  # Make sure this policy exists in your data
-        "id_siniestro": 99999,
-        "tipo": "Accidente",
-        "fecha": "12/11/2025",
-        "monto_estimado": 50000.00,
-        "estado": "Abierto",
-        "descripcion": "Accidente de prueba - colisión frontal"
-    }
-    result = create_claim(new_claim)
-    print(result)
-    print()
-    
-    # Test 2: Get all claims for a policy
-    print("2. Obteniendo todos los siniestros para póliza 1...")
-    claims = get_claims_by_policy(1)
-    if 'error' not in claims:
-        print(f"Póliza {claims['nro_poliza']} - Cliente: {claims['cliente']}")
-        print(f"Total siniestros: {len(claims['siniestros'])}")
-    print()
-    
-    # Test 3: Update claim status
-    print("3. Actualizando estado del siniestro...")
-    update_result = update_claim_status(
-        nro_poliza=1,
-        id_siniestro=99999,
-        nuevo_estado="En Proceso",
-        monto_final=48000.00
-    )
-    print(update_result)
-    print()
-    
-    # Note: To clean up, you would need to manually remove the test claim from the database
-    print("Nota: Siniestro de prueba creado. Eliminar manualmente si es necesario.")
+    interactive_abm()
