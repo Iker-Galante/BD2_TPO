@@ -23,7 +23,7 @@ def get_active_agents_with_assigned_policies_count(use_cache=True):
             print("Agentes activos con cantidad de pólizas asignadas:")
             for r in cached_result:
                 print(
-                    f"Agente {r['id_agente']} - {r['nombre']} {r['apellido']}: "
+                    f"Agente {r['_id']} - {r['nombre']} {r['apellido']}: "
                     f"{r['polizas_asignadas']} pólizas"
                 )
             
@@ -32,34 +32,27 @@ def get_active_agents_with_assigned_policies_count(use_cache=True):
     # Cache miss - query MongoDB
     print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
-    agents = {}
 
-    clients = collection.find({
-        "polizas": {"$exists": True}
-    })
+    agents = collection.aggregate([
+        {
+            "$unwind": "$polizas"
+        },
+        {
+            "$match": {
+                "polizas.agente.activo": True
+            }
+        },
+        {
+            "$group": {
+                "_id": "$polizas.id_agente",
+                "nombre": {"$first": "$polizas.agente.nombre"},
+                "apellido": {"$first": "$polizas.agente.apellido"},
+                "polizas_asignadas": {"$sum": 1}
+            }
+        }
+    ])
 
-    for client in clients:
-        for poliza in client.get("polizas", []):
-            agente_info = poliza.get("agente")
-            id_agente = poliza.get("id_agente")
-
-            if not agente_info or id_agente is None:
-                continue
-
-            if not agente_info.get("activo"):
-                continue
-
-            if id_agente not in agents:
-                agents[id_agente] = {
-                    "id_agente": id_agente,
-                    "nombre": agente_info.get("nombre"),
-                    "apellido": agente_info.get("apellido"),
-                    "polizas_asignadas": 0
-                }
-
-            agents[id_agente]["polizas_asignadas"] += 1
-
-    result = list(agents.values())
+    result = [agent for agent in agents]
     
     # Store in cache (10 minutes - agent data changes less frequently)
     if use_cache:
@@ -70,7 +63,7 @@ def get_active_agents_with_assigned_policies_count(use_cache=True):
 
     for r in result:
         print(
-            f"Agente {r['id_agente']} - {r['nombre']} {r['apellido']}: "
+            f"Agente {r['_id']} - {r['nombre']} {r['apellido']}: "
             f"{r['polizas_asignadas']} pólizas"
         )
 
