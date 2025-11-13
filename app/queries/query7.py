@@ -20,6 +20,7 @@ def get_top10_clients_by_total_coverage():
             id_cliente_str, nombre = member.split("|", 1)
             result.append({
                 "id_cliente": int(id_cliente_str),
+                "nombre": nombre,
                 "cobertura_total": float(score)
             })
     else:
@@ -27,9 +28,10 @@ def get_top10_clients_by_total_coverage():
 
     print("Top 10 clientes por cobertura total:")
     for r in result:
+        nombre_display = f" - {r['nombre']}" if 'nombre' in r else ""
         print(
-            f"Cliente {r['id_cliente']}: "
-            f"cobertura total = {r['cobertura_total']}"
+            f"Cliente {r['id_cliente']}{nombre_display}: "
+            f"cobertura total = ${r['cobertura_total']}"
         )
 
     return result
