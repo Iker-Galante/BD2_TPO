@@ -33,52 +33,48 @@ def load_csv_to_mongo():
         elif file == "resources/polizas.csv":
             for record in records:
                 # Extract id_cliente for the query but remove it from the record
-                id_cliente = record["id_cliente"]
-                poliza_record = {k: v for k, v in record.items() if k != "id_cliente"}
+                id_cliente = record.pop("id_cliente")
                 
                 # Check if poliza already exists for this client
                 query_filter = {
                     "id_cliente": id_cliente, 
-                    "polizas.nro_poliza": {"$ne": poliza_record["nro_poliza"]}
+                    "polizas.nro_poliza": {"$ne": record["nro_poliza"]}
                 }
-                update_operation = {"$push": {"polizas": poliza_record}}
+                update_operation = {"$push": {"polizas": record}}
                 mongo_collection.update_one(query_filter, update_operation)
                 
         elif file == "resources/siniestros.csv":
             for record in records:
                 # Extract nro_poliza for the query but remove it from the record
-                nro_poliza = record["nro_poliza"]
-                siniestro_record = {k: v for k, v in record.items() if k != "nro_poliza"}
+                nro_poliza = record.pop("nro_poliza")
                 
                 # Check if siniestro already exists for this poliza
                 query_filter = {
                     "polizas.nro_poliza": nro_poliza,
-                    "polizas.siniestros.id_siniestro": {"$ne": siniestro_record["id_siniestro"]}
+                    "polizas.siniestros.id_siniestro": {"$ne": record["id_siniestro"]}
                 }
-                update_operation = {"$push": {"polizas.$.siniestros": siniestro_record}}
+                update_operation = {"$push": {"polizas.$.siniestros": record}}
                 mongo_collection.update_one(query_filter, update_operation)
                 
         elif file == "resources/vehiculos.csv":
             for record in records:
-                id_cliente = record["id_cliente"]
-                vehiculo_record = {k: v for k, v in record.items() if k != "id_cliente"}
+                id_cliente = record.pop("id_cliente")
                 
                 # Check if vehiculo already exists for this client
                 query_filter = {
                     "id_cliente": id_cliente,
-                    "vehiculos.id_vehiculo": {"$ne": vehiculo_record["id_vehiculo"]}
+                    "vehiculos.id_vehiculo": {"$ne": record["id_vehiculo"]}
                 }
-                update_operation = {"$push": {"vehiculos": vehiculo_record}}
+                update_operation = {"$push": {"vehiculos": record}}
                 mongo_collection.update_one(query_filter, update_operation)
                 
         elif file == "resources/agentes.csv":
             for record in records:
-                id_agente = record["id_agente"]
-                agente_record = {k: v for k, v in record.items() if k != "id_agente"}
+                id_agente = record.pop("id_agente")
                 
                 # Add agent info to ALL polizas that have this agent using arrayFilters
                 query_filter = {"polizas.id_agente": id_agente}
-                update_operation = {"$set": {"polizas.$[elem].agente": agente_record}}
+                update_operation = {"$set": {"polizas.$[elem].agente": record}}
                 array_filters = [{"elem.id_agente": id_agente}]
                 
                 mongo_collection.update_many(
