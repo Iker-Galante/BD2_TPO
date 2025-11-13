@@ -89,36 +89,6 @@ def load_csv_to_mongo():
 
         print(f"Processed {len(records)} records from {file}")
 
-        build_top_coverage_in_redis(mongo_collection, redis_client)
-
-
-def build_top_coverage_in_redis(mongo_collection, redis_client):
-
-        redis_key = "top_clients_coverage"
-        redis_client.delete(redis_key)
-
-        clients = mongo_collection.find({
-            "id_cliente": {"$exists": True},
-            "polizas": {"$exists": True}
-        })
-
-        for client in clients:
-            total_coverage = 0.0
-
-            for poliza in client.get("polizas", []):
-                cov = poliza.get("cobertura_total")
-                if cov is None:
-                    continue
-                try:
-                    total_coverage += float(cov)
-                except (TypeError, ValueError):
-                    continue
-
-            if total_coverage > 0:
-                member = f"{client['id_cliente']}|{client.get('nombre', '')} {client.get('apellido', '')}"
-                # score = cobertura_total
-                redis_client.zadd(redis_key, {member: total_coverage}) # lo guardo en un sorted set
-
 
 if __name__ == "__main__":
     load_csv_to_mongo()
