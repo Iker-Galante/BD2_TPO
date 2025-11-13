@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import invalidate_cache_pattern
@@ -41,12 +41,12 @@ def create_client(client_data):
     
     try:
         result = collection.insert_one(client_data)
-        print(f"✓ Client created successfully with ID: {client_data['id_cliente']}")
+        print(f"✓ Cliente creado exitosamente con ID: {client_data['id_cliente']}")
         
         # Invalidate related caches
         invalidate_cache_pattern("query1:*")  # Active clients
         invalidate_cache_pattern("query4:*")  # Clients without policies
-        print("✓ Cache invalidated")
+        print("✓ Caché invalidado")
         
         return {
             "success": True,
@@ -75,9 +75,9 @@ def read_client(id_cliente):
     )
     
     if not client:
-        return {"error": f"Client with id_cliente {id_cliente} not found"}
+        return {"error": f"Cliente con id_cliente {id_cliente} no encontrado"}
     
-    print(f"✓ Client found: {client.get('nombre')} {client.get('apellido')}")
+    print(f"✓ Cliente encontrado: {client.get('nombre')} {client.get('apellido')}")
     return client
 
 
@@ -116,12 +116,12 @@ def update_client(id_cliente, update_data):
         )
         
         if result.modified_count > 0:
-            print(f"✓ Client {id_cliente} updated successfully")
+            print(f"✓ Cliente {id_cliente} actualizado exitosamente")
             
             # Invalidate related caches
             invalidate_cache_pattern("query1:*")
             invalidate_cache_pattern("query4:*")
-            print("✓ Cache invalidated")
+            print("✓ Caché invalidado")
             
             return {
                 "success": True,
@@ -160,12 +160,12 @@ def delete_client(id_cliente, soft_delete=True):
                 {"id_cliente": id_cliente},
                 {"$set": {"activo": False}}
             )
-            print(f"✓ Client {id_cliente} marked as inactive")
+            print(f"✓ Cliente {id_cliente} marcado como inactivo")
             
             # Invalidate caches
             invalidate_cache_pattern("query1:*")
             invalidate_cache_pattern("query4:*")
-            print("✓ Cache invalidated")
+            print("✓ Caché invalidado")
             
             return {
                 "success": True,
@@ -175,11 +175,11 @@ def delete_client(id_cliente, soft_delete=True):
         else:
             # Hard delete: permanently remove
             result = collection.delete_one({"id_cliente": id_cliente})
-            print(f"✓ Client {id_cliente} permanently deleted")
+            print(f"✓ Cliente {id_cliente} eliminado permanentemente")
             
             # Invalidate caches
             invalidate_cache_pattern("query*")  # Invalidate all query caches
-            print("✓ Cache invalidated")
+            print("✓ Caché invalidado")
             
             return {
                 "success": True,
@@ -208,7 +208,7 @@ def list_clients(filter_active=None):
     
     clients = list(collection.find(query, {"_id": 0}))
     
-    print(f"Found {len(clients)} clients")
+    print(f"Se encontraron {len(clients)} clientes")
     for client in clients:
         status = "✓" if client.get('activo') else "✗"
         print(f"{status} {client.get('id_cliente')}: {client.get('nombre')} {client.get('apellido')}")
@@ -218,10 +218,10 @@ def list_clients(filter_active=None):
 
 # Example usage and testing
 if __name__ == "__main__":
-    print("=== Client CRUD Operations (ABM) ===\n")
+    print("=== Operaciones CRUD de Clientes (ABM) ===\n")
     
     # Test 1: Create a new client
-    print("1. Creating a new client...")
+    print("1. Creando un nuevo cliente...")
     new_client = {
         "id_cliente": 9999,
         "nombre": "Test",
@@ -239,14 +239,14 @@ if __name__ == "__main__":
     print()
     
     # Test 2: Read the client
-    print("2. Reading the client...")
+    print("2. Leyendo el cliente...")
     client = read_client(9999)
     if 'error' not in client:
-        print(f"Found: {client.get('nombre')} {client.get('apellido')}")
+        print(f"Encontrado: {client.get('nombre')} {client.get('apellido')}")
     print()
     
     # Test 3: Update the client
-    print("3. Updating the client...")
+    print("3. Actualizando el cliente...")
     update_result = update_client(9999, {
         "telefono": "0987654321",
         "email": "newemail@example.com"
@@ -255,16 +255,16 @@ if __name__ == "__main__":
     print()
     
     # Test 4: List clients
-    print("4. Listing all clients...")
+    print("4. Listando todos los clientes...")
     list_clients()
     print()
     
     # Test 5: Delete (soft delete)
-    print("5. Deleting the client (soft delete)...")
+    print("5. Eliminando el cliente (eliminación lógica)...")
     delete_result = delete_client(9999, soft_delete=True)
     print(delete_result)
     print()
     
     # Cleanup: Hard delete the test client
-    print("6. Cleanup: Permanently deleting test client...")
+    print("6. Limpieza: Eliminando permanentemente el cliente de prueba...")
     delete_client(9999, soft_delete=False)

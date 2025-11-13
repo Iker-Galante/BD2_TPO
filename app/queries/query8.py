@@ -2,7 +2,7 @@ import sys
 import os
 from datetime import datetime
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import RedisCache
@@ -18,8 +18,8 @@ def get_accident_claims_2025(use_cache=True):
     if use_cache:
         cached_result = cache.get(cache_key)
         if cached_result is not None:
-            print(f"✓ Cache HIT - Retrieved {len(cached_result)} accident claims from Redis")
-            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)\n")
+            print(f"✓ Cache HIT - Se recuperaron {len(cached_result)} siniestros de accidente desde Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)\n")
             
             for r in cached_result:
                 print(
@@ -30,7 +30,7 @@ def get_accident_claims_2025(use_cache=True):
             return cached_result
     
     # Cache miss - query MongoDB
-    print("✗ Cache MISS - Querying MongoDB...")
+    print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
     result = []
 
@@ -68,9 +68,9 @@ def get_accident_claims_2025(use_cache=True):
     # Store in cache (3 minutes - accident claims change moderately)
     if use_cache:
         cache.set(cache_key, result, ttl=180)
-        print(f"✓ Stored {len(result)} accident claims in cache (TTL: 180 seconds)\n")
+        print(f"✓ Almacenados {len(result)} siniestros de accidente en caché (TTL: 180 segundos)\n")
 
-    print(f"Found {len(result)} claims in 2025:")
+    print(f"Se encontraron {len(result)} siniestros en 2025:")
     for r in result:
         print(
             f"Siniestro {r['id_siniestro']} - Fecha: {r['fecha']} - "

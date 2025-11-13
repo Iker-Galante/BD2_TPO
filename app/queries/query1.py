@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection, get_redis_client
 from app.cache import RedisCache
@@ -20,19 +20,19 @@ def get_active_clients(use_cache=True):
     if use_cache:
         cached_result = cache.get(cache_key)
         if cached_result is not None:
-            print(f"✓ Cache HIT - Retrieved {len(cached_result)} active clients from Redis")
-            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)")
+            print(f"✓ Cache HIT - Se recuperaron {len(cached_result)} clientes activos desde Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)")
             
             # Print summary
             for client in cached_result[:5]:  # Show first 5
                 print(f"  - {client['nombre']} {client['apellido']} (ID: {client['id_cliente']}) - {client['email']}")
             if len(cached_result) > 5:
-                print(f"  ... and {len(cached_result) - 5} more")
+                print(f"  ... y {len(cached_result) - 5} más")
             
             return cached_result
     
     # Cache miss - query MongoDB
-    print("✗ Cache MISS - Querying MongoDB...")
+    print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
     
     # Query for clients where activo is True AND id_cliente exists (to filter only client documents)
@@ -46,9 +46,9 @@ def get_active_clients(use_cache=True):
     # Store in cache (5 minutes TTL)
     if use_cache:
         cache.set(cache_key, result, ttl=300)
-        print(f"✓ Stored {len(result)} clients in cache (TTL: 300 seconds)")
+        print(f"✓ Almacenados {len(result)} clientes en caché (TTL: 300 segundos)")
     
-    print(f"\nFound {len(result)} active clients:")
+    print(f"\nSe encontraron {len(result)} clientes activos:")
     for client in result:
         print(f"  - {client['nombre']} {client['apellido']} (ID: {client['id_cliente']}) - {client['email']}")
     

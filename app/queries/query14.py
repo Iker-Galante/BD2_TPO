@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import invalidate_cache_pattern
@@ -77,13 +77,13 @@ def create_claim(claim_data):
         )
         
         if result.modified_count > 0:
-            print(f"✓ Claim {claim_data['id_siniestro']} created successfully for policy {nro_poliza}")
+            print(f"✓ Siniestro {claim_data['id_siniestro']} creado exitosamente para póliza {nro_poliza}")
             
             # Invalidate claims-related caches
             invalidate_cache_pattern("query2:*")  # Open claims
             invalidate_cache_pattern("query8:*")  # Accident claims
             invalidate_cache_pattern("query12:*")  # Agents with claims
-            print("✓ Cache invalidated")
+            print("✓ Caché invalidado")
             
             return {
                 "success": True,
@@ -144,12 +144,12 @@ def update_claim_status(nro_poliza, id_siniestro, nuevo_estado, monto_final=None
         )
         
         if result.modified_count > 0:
-            print(f"✓ Claim {id_siniestro} updated successfully to status: {nuevo_estado}")
+            print(f"✓ Siniestro {id_siniestro} actualizado exitosamente a estado: {nuevo_estado}")
             
             # Invalidate claims-related caches
             invalidate_cache_pattern("query2:*")
             invalidate_cache_pattern("query8:*")
-            print("✓ Cache invalidated")
+            print("✓ Caché invalidado")
             
             return {
                 "success": True,
@@ -186,9 +186,9 @@ def get_claims_by_policy(nro_poliza):
     poliza = client['polizas'][0]
     siniestros = poliza.get('siniestros', [])
     
-    print(f"Found {len(siniestros)} claims for policy {nro_poliza}:")
+    print(f"Se encontraron {len(siniestros)} siniestros para póliza {nro_poliza}:")
     for s in siniestros:
-        print(f"  - Claim {s.get('id_siniestro')}: {s.get('tipo')} - ${s.get('monto_estimado')} - {s.get('estado')}")
+        print(f"  - Siniestro {s.get('id_siniestro')}: {s.get('tipo')} - ${s.get('monto_estimado')} - {s.get('estado')}")
     
     return {
         "nro_poliza": nro_poliza,
@@ -199,10 +199,10 @@ def get_claims_by_policy(nro_poliza):
 
 # Example usage and testing
 if __name__ == "__main__":
-    print("=== Claim Management (Alta de Siniestros) ===\n")
+    print("=== Gestión de Siniestros (Alta de Siniestros) ===\n")
     
     # Test 1: Create a new claim
-    print("1. Creating a new claim...")
+    print("1. Creando un nuevo siniestro...")
     new_claim = {
         "nro_poliza": 1,  # Make sure this policy exists in your data
         "id_siniestro": 99999,
@@ -217,15 +217,15 @@ if __name__ == "__main__":
     print()
     
     # Test 2: Get all claims for a policy
-    print("2. Getting all claims for policy 1...")
+    print("2. Obteniendo todos los siniestros para póliza 1...")
     claims = get_claims_by_policy(1)
     if 'error' not in claims:
-        print(f"Policy {claims['nro_poliza']} - Cliente: {claims['cliente']}")
-        print(f"Total claims: {len(claims['siniestros'])}")
+        print(f"Póliza {claims['nro_poliza']} - Cliente: {claims['cliente']}")
+        print(f"Total siniestros: {len(claims['siniestros'])}")
     print()
     
     # Test 3: Update claim status
-    print("3. Updating claim status...")
+    print("3. Actualizando estado del siniestro...")
     update_result = update_claim_status(
         nro_poliza=1,
         id_siniestro=99999,
@@ -236,4 +236,4 @@ if __name__ == "__main__":
     print()
     
     # Note: To clean up, you would need to manually remove the test claim from the database
-    print("Note: Test claim created. Remove manually if needed.")
+    print("Nota: Siniestro de prueba creado. Eliminar manualmente si es necesario.")

@@ -2,7 +2,7 @@ from app.db import get_mongo_collection
 from app.cache import RedisCache
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 def view_active_policies(use_cache=True):
     """
@@ -15,10 +15,10 @@ def view_active_policies(use_cache=True):
     if use_cache:
         cached_result = cache.get(cache_key)
         if cached_result is not None:
-            print(f"✓ Cache HIT - Retrieved {len(cached_result)} active policies from Redis")
-            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)\n")
+            print(f"✓ Cache HIT - Se recuperaron {len(cached_result)} pólizas activas desde Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)\n")
             
-            print("Polizas activas\n")
+            print("Pólizas activas\n")
             for p in cached_result:
                 print(
                     f"{p['nro_poliza']} | Cliente {p['id_cliente']} | "
@@ -29,7 +29,7 @@ def view_active_policies(use_cache=True):
             return cached_result
     
     # Cache miss - query MongoDB
-    print("✗ Cache MISS - Querying MongoDB...")
+    print("✗ Cache MISS - Consultando MongoDB...")
     col = get_mongo_collection()
 
     pipeline = [
@@ -72,9 +72,9 @@ def view_active_policies(use_cache=True):
     # Store in cache (5 minutes)
     if use_cache:
         cache.set(cache_key, result, ttl=300)
-        print(f"✓ Stored {len(result)} active policies in cache (TTL: 300 seconds)\n")
+        print(f"✓ Almacenadas {len(result)} pólizas activas en caché (TTL: 300 segundos)\n")
 
-    print("Polizas activas\n")
+    print("Pólizas activas\n")
     for p in result:
         print(
             f"{p['nro_poliza']} | Cliente {p['id_cliente']} | "

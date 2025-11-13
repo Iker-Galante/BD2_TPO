@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import RedisCache
@@ -16,10 +16,10 @@ def get_agents_with_claims_count(use_cache=True):
     if use_cache:
         cached_result = cache.get(cache_key)
         if cached_result is not None:
-            print(f"✓ Cache HIT - Retrieved {len(cached_result)} agents from Redis")
-            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)\n")
+            print(f"✓ Cache HIT - Se recuperaron {len(cached_result)} agentes desde Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)\n")
             
-            print("Agents and associated claims count:")
+            print("Agentes y cantidad de siniestros asociados:")
             for a in cached_result:
                 print(
                     f"Agente {a['id_agente']} - {a.get('nombre', '')} {a.get('apellido', '')}: "
@@ -29,7 +29,7 @@ def get_agents_with_claims_count(use_cache=True):
             return cached_result
     
     # Cache miss - query MongoDB
-    print("✗ Cache MISS - Querying MongoDB...")
+    print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
     agents = {}
 
@@ -71,9 +71,9 @@ def get_agents_with_claims_count(use_cache=True):
     # Store in cache (5 minutes)
     if use_cache:
         cache.set(cache_key, result, ttl=300)
-        print(f"✓ Stored {len(result)} agents in cache (TTL: 300 seconds)\n")
+        print(f"✓ Almacenados {len(result)} agentes en caché (TTL: 300 segundos)\n")
 
-    print("Agents and associated claims count:")
+    print("Agentes y cantidad de siniestros asociados:")
     for a in result:
         print(
             f"Agente {a['id_agente']} - {a.get('nombre', '')} {a.get('apellido', '')}: "

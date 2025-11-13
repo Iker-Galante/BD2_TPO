@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import RedisCache
@@ -19,8 +19,8 @@ def get_clients_without_active_policies(use_cache=True):
     if use_cache:
         cached_result = cache.get(cache_key)
         if cached_result is not None:
-            print(f"✓ Cache HIT - Retrieved {len(cached_result)} clients from Redis")
-            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)\n")
+            print(f"✓ Cache HIT - Se recuperaron {len(cached_result)} clientes desde Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)\n")
             
             for c in cached_result:
                 print(f"Cliente {c['id_cliente']}: {c['nombre']} {c['apellido']}")
@@ -28,18 +28,9 @@ def get_clients_without_active_policies(use_cache=True):
             return cached_result
     
     # Cache miss - query MongoDB
-    print("✗ Cache MISS - Querying MongoDB...")
+    print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
     result = []
-
-    active_policy_clients = collection.distinct(
-        "id_cliente",
-        {
-            "nro_poliza": {"$exists": True},
-            "estado": "Activa"
-        }
-    )
-    active_policy_clients = set(active_policy_clients)
 
     clients = collection.find({
         "id_cliente": {"$exists": True},
@@ -47,7 +38,15 @@ def get_clients_without_active_policies(use_cache=True):
     })
 
     for client in clients:
-        if client["id_cliente"] not in active_policy_clients:
+        polizas = client.get("polizas", [])
+        
+        # Check if client has any active policy
+        has_active_policy = any(
+            p.get("estado") == "Activa" 
+            for p in polizas
+        )
+        
+        if not has_active_policy:
             result.append({
                 "id_cliente": client["id_cliente"],
                 "nombre": client["nombre"],
@@ -57,9 +56,9 @@ def get_clients_without_active_policies(use_cache=True):
     # Store in cache (5 minutes)
     if use_cache:
         cache.set(cache_key, result, ttl=300)
-        print(f"✓ Stored {len(result)} clients in cache (TTL: 300 seconds)\n")
+        print(f"✓ Almacenados {len(result)} clientes en caché (TTL: 300 segundos)\n")
 
-    print(f"Found {len(result)} clients without active policies:")
+    print(f"Se encontraron {len(result)} clientes sin pólizas activas:")
     for c in result:
         print(f"Cliente {c['id_cliente']}: {c['nombre']} {c['apellido']}")
 

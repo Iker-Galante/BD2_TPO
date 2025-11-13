@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import invalidate_cache_pattern
@@ -138,19 +138,19 @@ def issue_new_policy(policy_data):
         )
         
         if result.modified_count > 0:
-            print(f"✓ Policy {nro_poliza} issued successfully for client {id_cliente}")
-            print(f"  Type: {policy_data['tipo']}")
-            print(f"  Period: {policy_data['fecha_inicio']} - {policy_data['fecha_fin']}")
-            print(f"  Monthly premium: ${prima_mensual}")
-            print(f"  Total coverage: ${cobertura_total}")
-            print(f"  Agent: {id_agente}")
+            print(f"✓ Póliza {nro_poliza} emitida exitosamente para cliente {id_cliente}")
+            print(f"  Tipo: {policy_data['tipo']}")
+            print(f"  Período: {policy_data['fecha_inicio']} - {policy_data['fecha_fin']}")
+            print(f"  Prima mensual: ${prima_mensual}")
+            print(f"  Cobertura total: ${cobertura_total}")
+            print(f"  Agente: {id_agente}")
             
             # Invalidate policy-related caches
             invalidate_cache_pattern("query4:*")  # Clients without active policies
             invalidate_cache_pattern("query5:*")  # Agents with policy count
             invalidate_cache_pattern("query7:*")  # Top clients by coverage
             invalidate_cache_pattern("query9:*")  # Active policies view
-            print("✓ Cache invalidated")
+            print("✓ Caché invalidado")
             
             return {
                 "success": True,
@@ -232,30 +232,30 @@ def get_available_agents():
     
     agents = list(collection.aggregate(pipeline))
     
-    print(f"Found {len(agents)} active agents:")
+    print(f"Se encontraron {len(agents)} agentes activos:")
     for agent in agents:
-        print(f"  - Agent {agent['_id']}: {agent.get('nombre')} {agent.get('apellido')} - {agent['policy_count']} policies")
+        print(f"  - Agente {agent['_id']}: {agent.get('nombre')} {agent.get('apellido')} - {agent['policy_count']} pólizas")
     
     return agents
 
 
 # Example usage and testing
 if __name__ == "__main__":
-    print("=== Policy Issuance (Emisión de Pólizas) ===\n")
+    print("=== Emisión de Pólizas ===\n")
     
     # Test 1: Get available agents
-    print("1. Getting available agents...")
+    print("1. Obteniendo agentes disponibles...")
     agents = get_available_agents()
     print()
     
     # Test 2: Validate requirements for a client
-    print("2. Validating policy requirements for client 1...")
+    print("2. Validando requisitos de póliza para cliente 1...")
     validation = validate_policy_requirements(1, "Auto")
     print(validation)
     print()
     
     # Test 3: Issue a new policy
-    print("3. Issuing a new policy...")
+    print("3. Emitiendo una nueva póliza...")
     
     # Calculate dates
     today = datetime.now()
@@ -279,4 +279,4 @@ if __name__ == "__main__":
     print()
     
     # Note: To clean up, you would need to manually remove the test policy from the database
-    print("Note: Test policy created. Remove manually if needed.")
+    print("Nota: Póliza de prueba creada. Eliminar manualmente si es necesario.")

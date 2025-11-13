@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
 from app.cache import RedisCache
@@ -17,8 +17,8 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
     if use_cache:
         cached_result = cache.get(cache_key)
         if cached_result is not None:
-            print(f"✓ Cache HIT - Retrieved {len(cached_result)} insured vehicles from Redis")
-            print(f"  (TTL: {cache.get_ttl(cache_key)} seconds remaining)\n")
+            print(f"✓ Cache HIT - Se recuperaron {len(cached_result)} vehículos asegurados desde Redis")
+            print(f"  (TTL: {cache.get_ttl(cache_key)} segundos restantes)\n")
             
             for r in cached_result:
                 print(
@@ -30,7 +30,7 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
             return cached_result
     
     # Cache miss - query MongoDB
-    print("✗ Cache MISS - Querying MongoDB...")
+    print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
     result = []
 
@@ -67,9 +67,9 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
     # Store in cache (7 minutes - vehicle insurance status doesn't change often)
     if use_cache:
         cache.set(cache_key, result, ttl=420)
-        print(f"✓ Stored {len(result)} vehicles in cache (TTL: 420 seconds)\n")
+        print(f"✓ Almacenados {len(result)} vehículos en caché (TTL: 420 segundos)\n")
 
-    print(f"Found {len(result)} insured vehicles with client and Auto policy:")
+    print(f"Se encontraron {len(result)} vehículos asegurados con cliente y póliza Auto:")
 
     for r in result:
         print(
