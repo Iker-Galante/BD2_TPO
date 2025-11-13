@@ -47,7 +47,7 @@ def get_clients_with_multiple_insured_vehicles(use_cache=True):
 
         insured = [
             v for v in vehiculos
-            if v.get("asegurado") in ("True", True)
+            if v.get("asegurado") in (True, "True", "true", 1)
         ]
 
         if len(insured) > 1:
