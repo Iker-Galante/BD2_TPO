@@ -56,6 +56,5 @@ def get_active_clients(use_cache=True):
 
 # Example usage functions
 if __name__ == "__main__":
-    print("=== MongoDB Query Examples ===\n")
     # Show available estado
     get_active_clients()
