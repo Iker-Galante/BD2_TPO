@@ -41,9 +41,6 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
     })
 
     for client in clients:
-        nombre = client.get("nombre", "")
-        apellido = client.get("apellido", "")
-
         polizas_auto = [
             p for p in client.get("polizas", [])
             if p.get("tipo") == "Auto"
@@ -51,18 +48,17 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
         if not polizas_auto:
             continue
 
-        poliza = polizas_auto[0]
-
-        for vehiculo in client.get("vehiculos", []):
-            asegurado = vehiculo.get("asegurado")
-            if asegurado in (True, "True", "true", 1):
-                result.append({
-                    "id_vehiculo": vehiculo.get("id_vehiculo"),
-                    "patente": vehiculo.get("patente"),
-                    "cliente": f"{nombre} {apellido}",
-                    "nro_poliza": poliza.get("nro_poliza"),
-                    "estado_poliza": poliza.get("estado")
-                })
+        for poliza in polizas_auto:
+            for vehiculo in client.get("vehiculos", []):
+                asegurado = vehiculo.get("asegurado")
+                if asegurado in (True, "True", "true", 1):
+                    result.append({
+                        "id_vehiculo": vehiculo.get("id_vehiculo"),
+                        "patente": vehiculo.get("patente"),
+                        "cliente": f"{client.get("nombre")} {client.get("apellido")}",
+                        "nro_poliza": poliza.get("nro_poliza"),
+                        "estado_poliza": poliza.get("estado")
+                    })
     
     # Store in cache (7 minutes - vehicle insurance status doesn't change often)
     if use_cache:
@@ -73,7 +69,7 @@ def get_insured_vehicles_with_client_and_policy(use_cache=True):
 
     for r in result:
         print(
-            f"Vehículo {r['id_vehiculo']} ({r['patente']} - "
+            f"Vehículo {r['id_vehiculo']} ({r['patente']}) - "
             f"Cliente {r['cliente']} - "
             f"Póliza {r['nro_poliza']} ({r['estado_poliza']})"
         )
