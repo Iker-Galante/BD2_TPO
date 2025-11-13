@@ -1,7 +1,7 @@
 """
-Redis Cache Helper Module
+Módulo de Ayuda para Caché Redis
 
-Provides caching utilities for MongoDB queries to improve performance.
+Proporciona utilidades de caché para consultas MongoDB y mejorar el rendimiento.
 """
 
 import json
@@ -11,21 +11,21 @@ from app.db import get_redis_client
 
 
 class RedisCache:
-    """Helper class for Redis caching operations"""
+    """Clase auxiliar para operaciones de caché Redis"""
     
     def __init__(self, redis_client=None):
         self.redis = redis_client or get_redis_client()
-        self.default_ttl = 300  # 5 minutes default TTL
+        self.default_ttl = 300  # TTL predeterminado de 5 minutos
     
     def get(self, key):
         """
-        Get cached data from Redis
+        Obtener datos en caché desde Redis
         
         Args:
-            key: Cache key
+            key: Clave de caché
             
         Returns:
-            Cached data or None if not found
+            Datos en caché o None si no se encuentra
         """
         try:
             cached = self.redis.get(key)
@@ -33,50 +33,50 @@ class RedisCache:
                 return json.loads(cached)
             return None
         except Exception as e:
-            print(f"Redis GET error: {e}")
+            print(f"Error en Redis GET: {e}")
             return None
     
     def set(self, key, data, ttl=None):
         """
-        Store data in Redis cache
+        Almacenar datos en caché Redis
         
         Args:
-            key: Cache key
-            data: Data to cache (will be JSON serialized)
-            ttl: Time to live in seconds (default: 300)
+            key: Clave de caché
+            data: Datos a cachear (serán serializados a JSON)
+            ttl: Tiempo de vida en segundos (predeterminado: 300)
         """
         try:
             ttl = ttl or self.default_ttl
             self.redis.setex(
                 key,
                 ttl,
-                json.dumps(data, default=str)  # default=str handles dates
+                json.dumps(data, default=str)  # default=str maneja fechas
             )
             return True
         except Exception as e:
-            print(f"Redis SET error: {e}")
+            print(f"Error en Redis SET: {e}")
             return False
     
     def delete(self, key):
         """
-        Delete a key from cache
+        Eliminar una clave del caché
         
         Args:
-            key: Cache key to delete
+            key: Clave de caché a eliminar
         """
         try:
             self.redis.delete(key)
             return True
         except Exception as e:
-            print(f"Redis DELETE error: {e}")
+            print(f"Error en Redis DELETE: {e}")
             return False
     
     def clear_pattern(self, pattern):
         """
-        Clear all keys matching a pattern
+        Limpiar todas las claves que coincidan con un patrón
         
         Args:
-            pattern: Pattern to match (e.g., "query:*")
+            pattern: Patrón a coincidir (ej., "query:*")
         """
         try:
             keys = self.redis.keys(pattern)
@@ -85,54 +85,54 @@ class RedisCache:
                 return len(keys)
             return 0
         except Exception as e:
-            print(f"Redis CLEAR error: {e}")
+            print(f"Error en Redis CLEAR: {e}")
             return 0
     
     def exists(self, key):
-        """Check if key exists in cache"""
+        """Verificar si la clave existe en caché"""
         try:
             return bool(self.redis.exists(key))
         except Exception as e:
-            print(f"Redis EXISTS error: {e}")
+            print(f"Error en Redis EXISTS: {e}")
             return False
     
     def get_ttl(self, key):
-        """Get remaining TTL for a key"""
+        """Obtener el TTL restante para una clave"""
         try:
             return self.redis.ttl(key)
         except Exception as e:
-            print(f"Redis TTL error: {e}")
+            print(f"Error en Redis TTL: {e}")
             return -1
 
 
 def cached_query(cache_key, ttl=300):
     """
-    Decorator for caching query results
+    Decorador para cachear resultados de consultas
     
-    Usage:
+    Uso:
         @cached_query("query1:active_clients", ttl=600)
         def get_active_clients():
-            # ... query logic
+            # ... lógica de consulta
             return result
     """
     def decorator(func):
         def wrapper(*args, **kwargs):
             cache = RedisCache()
             
-            # Try to get from cache
+            # Intentar obtener del caché
             cached_result = cache.get(cache_key)
             if cached_result is not None:
                 print(f"✓ Cache HIT: {cache_key}")
                 return cached_result
             
-            print(f"✗ Cache MISS: {cache_key} - Querying MongoDB...")
+            print(f"✗ Cache MISS: {cache_key} - Consultando MongoDB...")
             
-            # Execute the function
+            # Ejecutar la función
             result = func(*args, **kwargs)
             
-            # Store in cache
+            # Almacenar en caché
             cache.set(cache_key, result, ttl)
-            print(f"✓ Cached result for {ttl} seconds")
+            print(f"✓ Resultado cacheado por {ttl} segundos")
             
             return result
         return wrapper
@@ -141,19 +141,19 @@ def cached_query(cache_key, ttl=300):
 
 def invalidate_cache_pattern(pattern):
     """
-    Invalidate all cache entries matching a pattern
+    Invalidar todas las entradas de caché que coincidan con un patrón
     
-    Usage:
+    Uso:
         invalidate_cache_pattern("query1:*")
     """
     cache = RedisCache()
     count = cache.clear_pattern(pattern)
-    print(f"✓ Invalidated {count} cache entries matching '{pattern}'")
+    print(f"✓ Invalidadas {count} entradas de caché que coinciden con '{pattern}'")
     return count
 
 
 def get_cache_stats():
-    """Get Redis cache statistics"""
+    """Obtener estadísticas de caché Redis"""
     cache = RedisCache()
     redis = cache.redis
     
@@ -180,13 +180,13 @@ def get_cache_stats():
         
         return stats
     except Exception as e:
-        print(f"Error getting cache stats: {e}")
+        print(f"Error obteniendo estadísticas de caché: {e}")
         return None
 
 
-# Example usage functions
+# Funciones de ejemplo de uso
 if __name__ == "__main__":
-    print("=== Redis Cache Stats ===")
+    print("=== Estadísticas de Caché Redis ===")
     stats = get_cache_stats()
     if stats:
         for k, v in stats.items():
