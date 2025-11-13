@@ -1,25 +1,25 @@
-# Redis Caching Strategy - Implementation Guide
+# Estrategia de Caché con Redis - Guía de Implementación
 
-## 📚 Overview
+## 📚 Descripción General
 
-This project implements a **Redis caching layer** to significantly improve query performance. MongoDB is used for data consistency and persistence, while Redis serves as a high-speed cache.
+Este proyecto implementa una **capa de caché con Redis** para mejorar significativamente el rendimiento de las consultas. MongoDB se utiliza para la consistencia y persistencia de datos, mientras que Redis sirve como caché de alta velocidad.
 
-## 🎯 Architecture
+## 🎯 Arquitectura
 
 ```
 ┌─────────────┐
-│   Client    │
+│   Cliente   │
 └──────┬──────┘
        │
        ▼
 ┌──────────────────┐
-│  Query Function  │
+│  Función Query   │
 └──────┬───────────┘
        │
        ▼
-┌──────────────┐     Cache HIT?     ┌──────────────┐
-│    Redis     │◄──────YES──────────│   Return     │
-│    Cache     │                    │   Result     │
+┌──────────────┐     ¿Cache HIT?    ┌──────────────┐
+│    Redis     │◄──────SÍ───────────│  Devolver    │
+│    Cache     │                    │  Resultado   │
 └──────┬───────┘                    └──────────────┘
        │
        NO (Cache MISS)
@@ -27,341 +27,325 @@ This project implements a **Redis caching layer** to significantly improve query
        ▼
 ┌──────────────┐
 │   MongoDB    │
-│   (Source    │
-│   of Truth)  │
+│   (Fuente    │
+│   de Verdad) │
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
-│  Store in    │───────────────────►│   Return     │
-│  Redis Cache │                    │   Result     │
+│  Guardar en  │───────────────────►│  Devolver    │
+│  Redis Cache │                    │  Resultado   │
 └──────────────┘                    └──────────────┘
 ```
 
-## ✅ Implemented Queries with Caching
+## ✅ Consultas Implementadas con Caché
 
-### Read Queries (with TTL)
+### Consultas de Lectura (con TTL)
 
-| Query | Description | Cache Key | TTL | Rationale |
-|-------|-------------|-----------|-----|-----------|
-| **Query 1** | Active clients | `query1:active_clients` | 300s (5min) | Client status changes moderately |
-| **Query 2** | Open claims | `query2:open_claims` | 120s (2min) | Claims change frequently |
-| **Query 5** | Agents with policy count | `query5:active_agents_policies` | 600s (10min) | Agent data is relatively static |
+| Query | Descripción | Clave Cache | TTL | Justificación |
+|-------|-------------|-------------|-----|---------------|
+| **Query 1** | Clientes activos | `query1:active_clients` | 300s (5min) | El estado de clientes cambia moderadamente |
+| **Query 2** | Siniestros abiertos | `query2:open_claims` | 120s (2min) | Los siniestros cambian frecuentemente |
+| **Query 5** | Agentes con conteo de pólizas | `query5:active_agents_policies` | 600s (10min) | Los datos de agentes son relativamente estáticos |
 
-### Write Operations (Cache Invalidation)
+### Operaciones de Escritura (Invalidación de Caché)
 
-| Query | Operations | Invalidates |
-|-------|-----------|-------------|
-| **Query 13** | Create/Update/Delete Client | `query1:*`, `query4:*` |
-| **Query 14** | Create/Update Claim | `query2:*`, `query8:*`, `query12:*` |
-| **Query 15** | Issue Policy | `query4:*`, `query5:*`, `query7:*`, `query9:*` |
+| Query | Operaciones | Invalida |
+|-------|-------------|----------|
+| **Query 13** | Crear/Actualizar/Eliminar Cliente | `query1:*`, `query4:*` |
+| **Query 14** | Crear/Actualizar Siniestro | `query2:*`, `query8:*`, `query12:*` |
+| **Query 15** | Emitir Póliza | `query4:*`, `query5:*`, `query7:*`, `query9:*` |
 
-## 🚀 Usage Examples
+## 🚀 Ejemplos de Uso
 
-### Using Cached Queries
+### Usar Consultas con Caché
 
 ```python
 from app.queries.query1 import get_active_clients
 
-# With cache (default)
+# Con caché (por defecto)
 result = get_active_clients(use_cache=True)
 
-# Without cache (force MongoDB query)
+# Sin caché (forzar consulta a MongoDB)
 result = get_active_clients(use_cache=False)
 ```
 
-### Cache Behavior
+### Comportamiento del Caché
 
-**First call (Cache MISS):**
+**Primera llamada (Cache MISS):**
 ```
-✗ Cache MISS - Querying MongoDB...
-✓ Stored 147 clients in cache (TTL: 300 seconds)
+✗ Cache MISS - Consultando MongoDB...
+✓ Almacenados 147 clientes en caché (TTL: 300 segundos)
 
-Found 147 active clients:
+Encontrados 147 clientes activos:
   - Laura Gómez (ID: 1) - laura@gmail.com
   ...
 ```
 
-**Second call (Cache HIT):**
+**Segunda llamada (Cache HIT):**
 ```
-✓ Cache HIT - Retrieved 147 active clients from Redis
-  (TTL: 285 seconds remaining)
+✓ Cache HIT - Recuperados 147 clientes activos desde Redis
+  (TTL: 285 segundos restantes)
   - Laura Gómez (ID: 1) - laura@gmail.com
   ...
 ```
 
-## 🛠️ Cache Management
+## 🛠️ Gestión del Caché
 
-### Using the Cache Manager Tool
+### Usar la Herramienta Cache Manager
 
 ```powershell
 python cache_manager.py
 ```
 
-**Features:**
-1. **Show cache statistics** - View hit rate, total keys
-2. **List all cached queries** - See what's cached with TTL
-3. **Clear all cache** - Remove all cached queries
-4. **Clear specific query** - Remove cache for one query
-5. **Test performance** - Measure cache speedup
+**Funcionalidades:**
+1. **Mostrar estadísticas de caché** - Ver tasa de aciertos, total de claves
+2. **Listar todas las consultas cacheadas** - Ver qué está en caché con TTL
+3. **Limpiar todo el caché** - Eliminar todas las consultas cacheadas
+4. **Limpiar consulta específica** - Eliminar caché de una consulta
+5. **Probar rendimiento** - Medir la mejora de velocidad con caché
 
-### Manual Cache Operations
+### Operaciones Manuales de Caché
 
 ```python
 from app.cache import RedisCache, invalidate_cache_pattern
 
 cache = RedisCache()
 
-# Get cached data
+# Obtener datos cacheados
 data = cache.get("query1:active_clients")
 
-# Set data with custom TTL
+# Establecer datos con TTL personalizado
 cache.set("my_key", {"data": "value"}, ttl=600)
 
-# Check if key exists
+# Verificar si existe la clave
 exists = cache.exists("query1:active_clients")
 
-# Get TTL
+# Obtener TTL
 ttl = cache.get_ttl("query1:active_clients")
 
-# Delete specific key
+# Eliminar clave específica
 cache.delete("query1:active_clients")
 
-# Invalidate by pattern
+# Invalidar por patrón
 invalidate_cache_pattern("query1:*")
-invalidate_cache_pattern("query*")  # All queries
+invalidate_cache_pattern("query*")  # Todas las consultas
 ```
 
-## ⚡ Performance Benefits
+## 🔄 Estrategia de Invalidación de Caché
 
-### Typical Performance Improvement
+### Patrón Write-Through
 
-| Operation | MongoDB (Cold) | Redis (Cached) | Speedup |
-|-----------|----------------|----------------|---------|
-| Query 1 (147 clients) | ~150-200ms | ~2-5ms | **30-100x faster** |
-| Query 2 (Open claims) | ~100-150ms | ~2-4ms | **40-75x faster** |
-| Query 5 (Agent stats) | ~80-120ms | ~2-3ms | **40-60x faster** |
-
-### Cache Hit Rate Goals
-
-- **Target**: >80% hit rate for read queries
-- **Achieved**: Depends on query frequency and TTL settings
-- **Monitor**: Use `cache_manager.py` to view statistics
-
-## 🔄 Cache Invalidation Strategy
-
-### Write-Through Pattern
-
-When data is modified:
-1. Update MongoDB (source of truth)
-2. Immediately invalidate related caches
-3. Next read will refresh cache from MongoDB
+Cuando se modifican los datos:
+1. Actualizar MongoDB (fuente de verdad)
+2. Invalidar inmediatamente los cachés relacionados
+3. La próxima lectura refrescará el caché desde MongoDB
 
 ```python
-# Example from query13.py
+# Ejemplo de query13.py
 def create_client(client_data):
-    # ... create client in MongoDB ...
+    # ... crear cliente en MongoDB ...
     
-    # Invalidate affected caches
-    invalidate_cache_pattern("query1:*")  # Active clients
-    invalidate_cache_pattern("query4:*")  # Clients without policies
+    # Invalidar cachés afectados
+    invalidate_cache_pattern("query1:*")  # Clientes activos
+    invalidate_cache_pattern("query4:*")  # Clientes sin pólizas
     
     return result
 ```
 
-### Invalidation Rules
+### Reglas de Invalidación
 
-| Data Change | Invalidate These Caches |
-|-------------|-------------------------|
-| Client created/updated/deleted | `query1:*`, `query4:*` |
-| Claim created/updated | `query2:*`, `query8:*`, `query12:*` |
-| Policy issued | `query4:*`, `query5:*`, `query7:*`, `query9:*` |
-| Any delete operation | `query*` (all caches) |
+| Cambio de Datos | Invalida Estos Cachés |
+|-----------------|------------------------|
+| Cliente creado/actualizado/eliminado | `query1:*`, `query4:*` |
+| Siniestro creado/actualizado | `query2:*`, `query8:*`, `query12:*` |
+| Póliza emitida | `query4:*`, `query5:*`, `query7:*`, `query9:*` |
+| Cualquier operación de eliminación | `query*` (todos los cachés) |
 
-## 📊 TTL (Time-To-Live) Guidelines
+## 📊 Guías de TTL (Time-To-Live)
 
-### Choosing Appropriate TTL
+### Elegir un TTL Apropiado
 
-| Data Type | Recommended TTL | Reason |
-|-----------|----------------|--------|
-| **Highly dynamic** (claims, orders) | 1-2 minutes | Changes frequently |
-| **Moderately dynamic** (clients, policies) | 5-10 minutes | Changes occasionally |
-| **Static** (agents, configurations) | 10-30 minutes | Rarely changes |
-| **Reference data** (catalogs) | 1-24 hours | Almost never changes |
+| Tipo de Datos | TTL Recomendado | Razón |
+|---------------|-----------------|--------|
+| **Altamente dinámico** (siniestros, órdenes) | 1-2 minutos | Cambian frecuentemente |
+| **Moderadamente dinámico** (clientes, pólizas) | 5-10 minutos | Cambian ocasionalmente |
+| **Estático** (agentes, configuraciones) | 10-30 minutos | Rara vez cambia |
+| **Datos de referencia** (catálogos) | 1-24 horas | Casi nunca cambian |
 
-### Current TTL Settings
+### Configuraciones Actuales de TTL
 
 ```python
-# Query 1 - Active clients
-cache.set(cache_key, result, ttl=300)  # 5 minutes
+# Query 1 - Clientes activos
+cache.set(cache_key, result, ttl=300)  # 5 minutos
 
-# Query 2 - Open claims  
-cache.set(cache_key, result, ttl=120)  # 2 minutes
+# Query 2 - Siniestros abiertos
+cache.set(cache_key, result, ttl=120)  # 2 minutos
 
-# Query 5 - Agents with policy count
-cache.set(cache_key, result, ttl=600)  # 10 minutes
+# Query 5 - Agentes con conteo de pólizas
+cache.set(cache_key, result, ttl=600)  # 10 minutos
 ```
 
-## 🔍 Monitoring Cache Performance
+## 🔍 Monitoreo del Rendimiento del Caché
 
-### View Statistics
+### Ver Estadísticas
 
 ```powershell
 python cache_manager.py
-# Select option 1 - Show cache statistics
+# Seleccionar opción 1 - Mostrar estadísticas de caché
 ```
 
-**Output:**
+**Salida:**
 ```
-=== Redis Cache Statistics ===
+=== Estadísticas de Caché Redis ===
 
-Total Keys: 15
-Total Connections: 234
-Cache Hits: 1,523
-Cache Misses: 145
-Hit Rate: 91.3%
+Total de Claves: 15
+Total de Conexiones: 234
+Aciertos de Caché: 1,523
+Fallos de Caché: 145
+Tasa de Aciertos: 91.3%
 ```
 
-### List Cached Queries
+### Listar Consultas Cacheadas
 
 ```powershell
 python cache_manager.py
-# Select option 2 - List all cached queries
+# Seleccionar opción 2 - Listar todas las consultas cacheadas
 ```
 
-**Output:**
+**Salida:**
 ```
-=== Cached Query Keys ===
+=== Claves de Consultas Cacheadas ===
 
-Found 3 cached queries:
+Encontradas 3 consultas cacheadas:
 
   query1:active_clients                    TTL: 4m 23s
   query2:open_claims                       TTL: 1m 45s
   query5:active_agents_policies            TTL: 9m 12s
 ```
 
-## 🎓 Best Practices
+## 🎓 Mejores Prácticas
 
-### ✅ DO
+### ✅ QUÉ HACER
 
-- ✅ Use caching for **read-heavy queries**
-- ✅ Set **appropriate TTL** based on data volatility
-- ✅ **Invalidate cache** when related data changes
-- ✅ Monitor **hit rates** and adjust TTL accordingly
-- ✅ Use **descriptive cache keys** with patterns
-- ✅ Handle Redis **connection errors** gracefully
+- ✅ Usar caché para **consultas de lectura intensiva**
+- ✅ Establecer **TTL apropiado** basado en la volatilidad de los datos
+- ✅ **Invalidar caché** cuando los datos relacionados cambien
+- ✅ Monitorear **tasas de aciertos** y ajustar el TTL en consecuencia
+- ✅ Usar **claves de caché descriptivas** con patrones
+- ✅ Manejar **errores de conexión a Redis** con elegancia
 
-### ❌ DON'T
+### ❌ QUÉ NO HACER
 
-- ❌ Cache data that changes every second
-- ❌ Set TTL too long for dynamic data
-- ❌ Forget to invalidate cache on writes
-- ❌ Cache very large result sets (>10MB)
-- ❌ Use cache for critical consistency requirements
-- ❌ Depend solely on cache (always have MongoDB fallback)
+- ❌ Cachear datos que cambian cada segundo
+- ❌ Establecer TTL demasiado largo para datos dinámicos
+- ❌ Olvidar invalidar el caché en escrituras
+- ❌ Cachear conjuntos de resultados muy grandes (>10MB)
+- ❌ Usar caché para requisitos críticos de consistencia
+- ❌ Depender únicamente del caché (siempre tener fallback a MongoDB)
 
-## 🧪 Testing Cache Performance
+## 🧪 Pruebas de Rendimiento del Caché
 
-### Run Performance Test
+### Ejecutar Prueba de Rendimiento
 
 ```powershell
 python cache_manager.py
-# Select option 5 - Test cache performance
+# Seleccionar opción 5 - Probar rendimiento del caché
 ```
 
-**Sample Output:**
+**Salida de Ejemplo:**
 ```
-=== Cache Performance Test ===
+=== Prueba de Rendimiento del Caché ===
 
-1. First call (should be MISS):
-✗ Cache MISS - Querying MongoDB...
-✓ Stored 147 clients in cache (TTL: 300 seconds)
-   Time: 0.156 seconds
+1. Primera llamada (debería ser MISS):
+✗ Cache MISS - Consultando MongoDB...
+✓ Almacenados 147 clientes en caché (TTL: 300 segundos)
+   Tiempo: 0.156 segundos
 
-2. Second call (should be HIT):
-✓ Cache HIT - Retrieved 147 active clients from Redis
-   Time: 0.003 seconds
+2. Segunda llamada (debería ser HIT):
+✓ Cache HIT - Recuperados 147 clientes activos desde Redis
+   Tiempo: 0.003 segundos
 
-Performance Improvement:
-  Speed increase: 98.1%
-  Speedup factor: 52.0x faster
+Mejora de Rendimiento:
+  Incremento de velocidad: 98.1%
+  Factor de aceleración: 52.0x más rápido
 ```
 
-## 🔧 Troubleshooting
+## 🔧 Solución de Problemas
 
-### Cache Not Working
+### El Caché No Funciona
 
-**Problem:** Always seeing "Cache MISS"
+**Problema:** Siempre veo "Cache MISS"
 
-**Solutions:**
-1. Verify Redis is running: `docker ps`
-2. Check Redis connection in `app/db.py`
-3. Ensure `use_cache=True` parameter
-4. Check TTL isn't set to 0
+**Soluciones:**
+1. Verificar que Redis esté corriendo: `docker ps`
+2. Revisar la conexión a Redis en `app/db.py`
+3. Asegurar que el parámetro `use_cache=True`
+4. Verificar que el TTL no esté en 0
 
-### Stale Data in Cache
+### Datos Obsoletos en el Caché
 
-**Problem:** Seeing old data even after updates
+**Problema:** Veo datos antiguos incluso después de actualizaciones
 
-**Solutions:**
-1. Check cache invalidation is called after writes
-2. Verify invalidation pattern matches cache key
-3. Manually clear cache: `python cache_manager.py` → Option 3
-4. Reduce TTL for that query type
+**Soluciones:**
+1. Verificar que la invalidación de caché se llame después de escrituras
+2. Verificar que el patrón de invalidación coincida con la clave de caché
+3. Limpiar caché manualmente: `python cache_manager.py` → Opción 3
+4. Reducir el TTL para ese tipo de consulta
 
-### Cache Keys Not Expiring
+### Las Claves de Caché No Expiran
 
-**Problem:** Keys staying in Redis forever
+**Problema:** Las claves se quedan en Redis para siempre
 
-**Solutions:**
-1. Check TTL is set when calling `cache.set()`
-2. Verify Redis `maxmemory-policy` allows expiration
-3. Use `cache.get_ttl(key)` to debug
+**Soluciones:**
+1. Verificar que el TTL esté configurado al llamar `cache.set()`
+2. Verificar que la `maxmemory-policy` de Redis permita expiración
+3. Usar `cache.get_ttl(key)` para depurar
 
-## 📈 Scaling Considerations
+## 📈 Consideraciones de Escalabilidad
 
-### When to Scale
+### Cuándo Escalar
 
-- Cache hit rate < 70%
-- Redis memory usage > 80%
-- Query response time degrading
-- High write/invalidation rate
+- Tasa de aciertos de caché < 70%
+- Uso de memoria de Redis > 80%
+- Tiempo de respuesta de consultas degradado
+- Alta tasa de escritura/invalidación
 
-### Scaling Options
+### Opciones de Escalabilidad
 
-1. **Increase Redis memory**: Modify Docker compose
-2. **Implement cache partitioning**: Multiple Redis instances
-3. **Use Redis Cluster**: For high availability
-4. **Implement cache warming**: Pre-populate frequently used queries
-5. **Add read replicas**: For MongoDB
+1. **Aumentar memoria de Redis**: Modificar Docker compose
+2. **Implementar particionamiento de caché**: Múltiples instancias de Redis
+3. **Usar Redis Cluster**: Para alta disponibilidad
+4. **Implementar precalentamiento de caché**: Pre-poblar consultas frecuentes
+5. **Agregar réplicas de lectura**: Para MongoDB
 
-## 🎯 Summary
+## 🎯 Resumen
 
-### Key Benefits
+### Beneficios Clave
 
-✅ **30-100x faster** query response times  
-✅ **Reduced MongoDB load** for read operations  
-✅ **Automatic invalidation** on data changes  
-✅ **Flexible TTL** configuration  
-✅ **Easy monitoring** with cache manager  
-✅ **Graceful degradation** if Redis fails  
+✅ **30-100x más rápido** tiempos de respuesta de consultas  
+✅ **Carga reducida en MongoDB** para operaciones de lectura  
+✅ **Invalidación automática** en cambios de datos  
+✅ **Configuración flexible de TTL**  
+✅ **Monitoreo fácil** con cache manager  
+✅ **Degradación elegante** si Redis falla  
 
-### Quick Commands
+### Comandos Rápidos
 
 ```powershell
-# Run cached query
+# Ejecutar consulta con caché
 python run_query.py 1
 
-# Manage cache
+# Gestionar caché
 python cache_manager.py
 
-# Clear all cache
-python cache_manager.py → Option 3
+# Limpiar todo el caché
+python cache_manager.py → Opción 3
 
-# View statistics
-python cache_manager.py → Option 1
+# Ver estadísticas
+python cache_manager.py → Opción 1
 ```
 
 ---
 
-**Remember**: MongoDB is the source of truth. Redis is just a performance optimization layer!
+**Recuerda**: MongoDB es la fuente de verdad. ¡Redis es solo una capa de optimización de rendimiento!

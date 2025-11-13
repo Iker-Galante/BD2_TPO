@@ -1,9 +1,5 @@
 # Resumen de Implementación - BD2 TPO
 
-## ✅ Estado del Proyecto
-
-Todas las consultas y servicios solicitados han sido implementados exitosamente.
-
 ## 📊 Consultas Implementadas
 
 ### Consultas de Lectura (Queries 1-12)
@@ -31,7 +27,6 @@ Todas las consultas y servicios solicitados han sido implementados exitosamente.
 | 14 | Alta de nuevos siniestros | `query14.py` | `create_claim()`, `update_claim_status()`, `get_claims_by_policy()` | ✅ Implementado |
 | 15 | Emisión de nuevas pólizas | `query15.py` | `issue_new_policy()`, `validate_policy_requirements()`, `get_available_agents()` | ✅ Implementado |
 
-## 🔧 Funcionalidades Implementadas
 
 ### Query 13 - ABM de Clientes
 
@@ -160,14 +155,6 @@ Todas las consultas y servicios solicitados han sido implementados exitosamente.
 - **Score**: cobertura_total (float)
 - **Member**: `{id_cliente}|{nombre} {apellido}` (string)
 
-## 🧪 Pruebas Realizadas
-
-✅ Carga inicial de datos desde CSV
-✅ Query 1: Verificado con 147 clientes activos
-✅ Query 7: Verificado top 10 con Redis
-✅ Query 5: Verificado agentes con conteo de pólizas
-✅ Helper script: Funciona correctamente
-✅ Docker containers: MongoDB y Redis operativos
 
 ## 📝 Documentación
 
@@ -180,10 +167,6 @@ Todas las consultas y servicios solicitados han sido implementados exitosamente.
 - Troubleshooting
 - Modelo de datos
 
-✅ **Script helper** (`run_query.py`):
-- Simplifica ejecución de consultas
-- Muestra menú de opciones
-- Configura automáticamente PYTHONPATH
 
 ## 🎯 Características Destacadas
 
@@ -192,26 +175,10 @@ Todas las consultas y servicios solicitados han sido implementados exitosamente.
 3. **Redis para optimización**: Top clientes pre-calculado en Redis para consultas rápidas
 4. **Soft delete**: Opción de eliminación lógica para mantener historial
 5. **Documentación completa**: README detallado con ejemplos prácticos
-6. **Script helper**: Facilita la ejecución sin preocuparse por PYTHONPATH
 
 ## 🔜 Posibles Mejoras Futuras
 
 - Agregar índices en MongoDB para mejorar performance
-- Implementar paginación en consultas que retornan muchos resultados
-- Agregar más validaciones de negocio (ej: edad mínima para contratar)
-- Implementar API REST con FastAPI o Flask
+- Implementar API REST con FastAPI o Flask para ayudar con front
 - Agregar tests unitarios con pytest
-- Implementar logging estructurado
-- Agregar métricas y monitoreo
 
-## 👥 Notas para el Equipo
-
-- Todos los archivos tienen encoding UTF-8 para soportar caracteres especiales
-- Las fechas usan formato DD/MM/YYYY consistentemente
-- Los IDs son numéricos (int) para facilitar comparaciones
-- El script helper elimina la necesidad de configurar PYTHONPATH manualmente
-
----
-
-**Fecha de implementación**: Noviembre 2025  
-**Estado**: ✅ Completo y funcional
