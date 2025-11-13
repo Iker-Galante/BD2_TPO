@@ -7,19 +7,56 @@ from app.cache import invalidate_cache_pattern
 from datetime import datetime
 
 
+def get_next_siniestro_id():
+    """
+    Get the next available id_siniestro by finding the maximum existing ID
+    and incrementing it. Starts at 9095 if no siniestros exist.
+    
+    Returns:
+        int: Next available siniestro ID
+    """
+    collection = get_mongo_collection()
+    
+    # Find all siniestros across all policies and get the maximum id_siniestro
+    pipeline = [
+        {"$match": {"polizas": {"$exists": True}}},
+        {"$unwind": "$polizas"},
+        {"$unwind": {"path": "$polizas.siniestros", "preserveNullAndEmptyArrays": False}},
+        {"$group": {
+            "_id": None,
+            "max_id": {"$max": "$polizas.siniestros.id_siniestro"}
+        }}
+    ]
+    
+    result = list(collection.aggregate(pipeline))
+    
+    if result and result[0]['max_id'] is not None:
+        next_id = result[0]['max_id'] + 1
+    else:
+        # No siniestros exist yet, start at 9095
+        next_id = 9095
+    
+    return next_id
+
+
 def create_claim(claim_data):
     """
     Create a new claim (siniestro) and add it to the corresponding policy
     
     Args:
         claim_data: Dictionary with claim information
-        Required fields: nro_poliza, id_siniestro, tipo, fecha, monto_estimado, estado
+        Required fields: nro_poliza, tipo, fecha, monto_estimado, estado
         Optional fields: descripcion, monto_final, fecha_resolucion
+        Note: id_siniestro is auto-generated if not provided
     
     Returns:
         Success message or error
     """
     collection = get_mongo_collection()
+    
+    # Auto-generate id_siniestro if not provided
+    if 'id_siniestro' not in claim_data:
+        claim_data['id_siniestro'] = get_next_siniestro_id()
     
     # Validate required fields
     required_fields = ['nro_poliza', 'id_siniestro', 'tipo', 'fecha', 'monto_estimado', 'estado']
@@ -47,7 +84,7 @@ def create_claim(claim_data):
         return {"error": f"Claim with id_siniestro {claim_data['id_siniestro']} already exists for policy {nro_poliza}"}
     
     # Validate claim type
-    valid_types = ['Accidente', 'Robo', 'Incendio', 'Granizo', 'Otro']
+    valid_types = ['Accidente', 'Robo', 'Incendio', 'Danio', 'Granizo', 'Otro']
     if claim_data['tipo'] not in valid_types:
         return {"error": f"Invalid claim type. Must be one of: {', '.join(valid_types)}"}
     
@@ -234,12 +271,10 @@ def interactive_abm():
             print(f"✓ Póliza '{nro_poliza}' encontrada")
             claim_data['nro_poliza'] = nro_poliza
             
-            # Get claim ID
-            try:
-                claim_data['id_siniestro'] = int(input("ID Siniestro (*): "))
-            except ValueError:
-                print("❌ Error: ID debe ser un número")
-                continue
+            # Auto-generate claim ID
+            next_id = get_next_siniestro_id()
+            claim_data['id_siniestro'] = next_id
+            print(f"✓ ID Siniestro asignado automáticamente: {next_id}")
             
             # Get claim type
             print("\nTipo de siniestro:")

@@ -6,19 +6,49 @@ from app.db import get_mongo_collection
 from app.cache import invalidate_cache_pattern
 
 
+def get_next_client_id():
+    """
+    Get the next available id_cliente by finding the maximum existing ID
+    and incrementing it. Starts at 206 if no clients exist.
+    
+    Returns:
+        int: Next available client ID
+    """
+    collection = get_mongo_collection()
+    
+    # Find the maximum id_cliente
+    result = collection.find_one(
+        {"id_cliente": {"$exists": True}},
+        sort=[("id_cliente", -1)]
+    )
+    
+    if result and 'id_cliente' in result:
+        next_id = result['id_cliente'] + 1
+    else:
+        # No clients exist yet, start at 206
+        next_id = 206
+    
+    return next_id
+
+
 def create_client(client_data):
     """
     Create a new client (Alta)
     
     Args:
         client_data: Dictionary with client information
-        Required fields: id_cliente, nombre, apellido, dni, email
+        Required fields: nombre, apellido, dni, email
         Optional fields: telefono, direccion, ciudad, provincia, activo
+        Note: id_cliente is auto-generated if not provided
     
     Returns:
         Created client document or error message
     """
     collection = get_mongo_collection()
+    
+    # Auto-generate id_cliente if not provided
+    if 'id_cliente' not in client_data:
+        client_data['id_cliente'] = get_next_client_id()
     
     # Validate required fields
     required_fields = ['id_cliente', 'nombre', 'apellido', 'dni', 'email']
@@ -241,12 +271,10 @@ def interactive_abm():
             print("\n--- CREAR NUEVO CLIENTE ---")
             client_data = {}
             
-            # Required fields
-            try:
-                client_data['id_cliente'] = int(input("ID Cliente (*): "))
-            except ValueError:
-                print("❌ Error: ID debe ser un número")
-                continue
+            # Auto-generate client ID
+            next_id = get_next_client_id()
+            client_data['id_cliente'] = next_id
+            print(f"✓ ID Cliente asignado automáticamente: {next_id}\n")
             
             client_data['nombre'] = input("Nombre (*): ").strip()
             client_data['apellido'] = input("Apellido (*): ").strip()
