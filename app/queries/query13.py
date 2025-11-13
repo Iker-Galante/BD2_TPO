@@ -87,46 +87,66 @@ def create_client(client_data):
         return {"error": f"Error creating client: {str(e)}"}
 
 
-def read_client(id_cliente):
+def read_client(id_cliente=None, dni=None):
     """
-    Read/retrieve a client by ID
+    Read/retrieve a client by ID or DNI
     
     Args:
-        id_cliente: Client ID to search for
+        id_cliente: Client ID to search for (optional)
+        dni: Client DNI to search for (optional)
     
     Returns:
         Client document or error message
     """
     collection = get_mongo_collection()
     
-    client = collection.find_one(
-        {"id_cliente": id_cliente},
-        {"_id": 0}  # Exclude MongoDB _id from result
-    )
+    if dni is not None:
+        query = {"dni": dni}
+        identifier = f"DNI {dni}"
+    elif id_cliente is not None:
+        query = {"id_cliente": id_cliente}
+        identifier = f"id_cliente {id_cliente}"
+    else:
+        return {"error": "Must provide either id_cliente or dni"}
+    
+    client = collection.find_one(query, {"_id": 0})
     
     if not client:
-        return {"error": f"Cliente con id_cliente {id_cliente} no encontrado"}
+        return {"error": f"Cliente con {identifier} no encontrado"}
     
     return client
 
 
-def update_client(id_cliente, update_data):
+def update_client(update_data, id_cliente=None, dni=None):
     """
     Update client information (Modificación)
     
     Args:
-        id_cliente: Client ID to update
         update_data: Dictionary with fields to update
+        id_cliente: Client ID to update (optional)
+        dni: Client DNI to update (optional)
     
     Returns:
         Success message or error
     """
     collection = get_mongo_collection()
     
+    # Build query based on identifier
+    if dni is not None:
+        query = {"dni": dni}
+        identifier = f"DNI {dni}"
+    elif id_cliente is not None:
+        query = {"id_cliente": id_cliente}
+        identifier = f"id_cliente {id_cliente}"
+    else:
+        return {"error": "Must provide either id_cliente or dni"}
+    
     # Check if client exists
-    existing = collection.find_one({"id_cliente": id_cliente})
+    existing = collection.find_one(query)
     if not existing:
-        return {"error": f"Client with id_cliente {id_cliente} not found"}
+        return {"error": f"Client with {identifier} not found"}
+    
+    id_cliente = existing['id_cliente']
     
     # Don't allow updating id_cliente
     if 'id_cliente' in update_data:
@@ -170,23 +190,36 @@ def update_client(id_cliente, update_data):
         return {"error": f"Error updating client: {str(e)}"}
 
 
-def delete_client(id_cliente, soft_delete=True):
+def delete_client(soft_delete=True, id_cliente=None, dni=None):
     """
     Delete a client (Baja)
     
     Args:
-        id_cliente: Client ID to delete
         soft_delete: If True, marks client as inactive; if False, permanently deletes
+        id_cliente: Client ID to delete (optional)
+        dni: Client DNI to delete (optional)
     
     Returns:
         Success message or error
     """
     collection = get_mongo_collection()
     
+    # Build query based on identifier
+    if dni is not None:
+        query = {"dni": dni}
+        identifier = f"DNI {dni}"
+    elif id_cliente is not None:
+        query = {"id_cliente": id_cliente}
+        identifier = f"id_cliente {id_cliente}"
+    else:
+        return {"error": "Must provide either id_cliente or dni"}
+    
     # Check if client exists
-    existing = collection.find_one({"id_cliente": id_cliente})
+    existing = collection.find_one(query)
     if not existing:
-        return {"error": f"Client with id_cliente {id_cliente} not found"}
+        return {"error": f"Client with {identifier} not found"}
+    
+    id_cliente = existing['id_cliente']
     
     try:
         if soft_delete:
@@ -317,17 +350,20 @@ def interactive_abm():
         elif operation == "2":
             # UPDATE
             print("\n--- MODIFICAR CLIENTE ---")
-            try:
-                id_cliente = int(input("ID del cliente a modificar: "))
-            except ValueError:
-                print("❌ Error: ID debe ser un número")
+            dni_input = input("DNI del cliente a modificar: ").strip()
+            if not dni_input.isdigit():
+                print("❌ Error: DNI debe ser numérico")
                 continue
             
+            original_dni = int(dni_input)
+            
             # First, retrieve current client
-            client = read_client(id_cliente)
+            client = read_client(dni=original_dni)
             if 'error' in client:
                 print(f"\n❌ {client['error']}")
                 continue
+            
+            print(f"\n✓ Cliente encontrado: {client.get('nombre')} {client.get('apellido')} (ID: {client.get('id_cliente')})")
             
             print("\n--- DATOS ACTUALES ---")
             print(f"Nombre: {client.get('nombre', 'N/A')}")
@@ -353,9 +389,9 @@ def interactive_abm():
             if apellido:
                 update_data['apellido'] = apellido
             
-            dni = input(f"DNI [{client.get('dni', '')}]: ").strip()
-            if dni:
-                update_data['dni'] = dni
+            dni_nuevo = input(f"DNI [{client.get('dni', '')}]: ").strip()
+            if dni_nuevo:
+                update_data['dni'] = dni_nuevo
             
             email = input(f"Email [{client.get('email', '')}]: ").strip()
             if email:
@@ -388,7 +424,7 @@ def interactive_abm():
                 
                 confirm = input("\n¿Confirmar modificación? (S/n): ").strip().lower()
                 if confirm != 'n':
-                    result = update_client(id_cliente, update_data)
+                    result = update_client(update_data, dni=original_dni)
                     if 'error' in result:
                         print(f"\n❌ Error: {result['error']}")
                     else:
@@ -399,19 +435,20 @@ def interactive_abm():
         elif operation == "3":
             # DELETE
             print("\n--- ELIMINAR CLIENTE ---")
-            try:
-                id_cliente = int(input("ID del cliente a eliminar: "))
-            except ValueError:
-                print("❌ Error: ID debe ser un número")
+            dni_input = input("DNI del cliente a eliminar: ").strip()
+            if not dni_input.isdigit():
+                print("❌ Error: DNI debe ser numérico")
                 continue
             
+            dni = int(dni_input)
+            
             # Show client info
-            client = read_client(id_cliente)
+            client = read_client(dni=dni)
             if 'error' in client:
                 print(f"\n❌ {client['error']}")
                 continue
             
-            print(f"\nCliente: {client.get('nombre')} {client.get('apellido')}")
+            print(f"\nCliente: {client.get('nombre')} {client.get('apellido')} (ID: {client.get('id_cliente')})")
             print(f"DNI: {client.get('dni')}")
             print(f"Email: {client.get('email')}")
             
@@ -421,10 +458,10 @@ def interactive_abm():
             
             delete_type = input("Seleccione (1/2): ").strip()
             
-            confirm = input(f"\n¿CONFIRMAR ELIMINACIÓN del cliente {id_cliente}? (S/n): ").strip().lower()
+            confirm = input(f"\n¿CONFIRMAR ELIMINACIÓN del cliente con DNI {dni}? (S/n): ").strip().lower()
             if confirm != 'n':
                 soft_delete = delete_type != "2"
-                result = delete_client(id_cliente, soft_delete=soft_delete)
+                result = delete_client(soft_delete=soft_delete, dni=dni)
                 if 'error' in result:
                     print(f"\n❌ Error: {result['error']}")
                 else:
