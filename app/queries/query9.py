@@ -1,5 +1,6 @@
 import sys
 import os
+from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.db import get_mongo_collection
@@ -23,8 +24,8 @@ def view_active_policies(use_cache=True):
             for p in cached_result:
                 print(
                     f"{p['nro_poliza']} | Cliente {p['id_cliente']} | "
-                    f"Tipo: {p['tipo']} | Inicio: {p['fecha_inicio']} | "
-                    f"Fin: {p['fecha_fin']} | Estado: {p['estado']}"
+                    f"Tipo: {p['tipo']} | Inicio: {datetime.fromisoformat(p['fecha_inicio']).strftime("%d/%m/%Y")} | "
+                    f"Fin: {datetime.fromisoformat(p['fecha_fin']).strftime("%d/%m/%Y")} | Estado: {p['estado']}"
                 )
             
             return cached_result
@@ -38,15 +39,6 @@ def view_active_policies(use_cache=True):
 
         {"$match": {
             "polizas.estado": "Activa"
-        }},
-
-        {"$set": {
-            "fecha_inicio_date": {
-                "$dateFromString": {
-                    "dateString": "$polizas.fecha_inicio",
-                    "format": "%d/%m/%Y"
-                }
-            }
         }},
 
         {"$sort": {
@@ -79,8 +71,8 @@ def view_active_policies(use_cache=True):
     for p in result:
         print(
             f"{p['nro_poliza']} | Cliente {p['id_cliente']} | "
-            f"Tipo: {p['tipo']} | Inicio: {p['fecha_inicio']} | "
-            f"Fin: {p['fecha_fin']} | Estado: {p['estado']}"
+            f"Tipo: {p['tipo']} | Inicio: {p['fecha_inicio'].strftime("%d/%m/%Y")} | "
+            f"Fin: {p['fecha_fin'].strftime("%d/%m/%Y")} | Estado: {p['estado']}"
         )
 
 if __name__ == "__main__":
