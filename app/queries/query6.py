@@ -40,12 +40,12 @@ def get_expired_policies(use_cache=True):
             "polizas.estado": {"$eq": "Vencida"}
         }
     }, {
-        "$group": {
+        "$project": {
             "_id": "$polizas.nro_poliza",
-            "tipo": {"$first": "$polizas.tipo"},
-            "estado": {"$first": "$polizas.estado"},
-            "nombre": {"$first": "$nombre"},
-            "apellido": {"$first": "$apellido"}
+            "tipo": "$polizas.tipo",
+            "estado": "$polizas.estado",
+            "nombre": "$nombre",
+            "apellido": "$apellido"
         }
     }])
 

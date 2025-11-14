@@ -46,11 +46,11 @@ def get_accident_claims_last_year(use_cache=True):
                 "polizas.siniestros.fecha": {"$lte": datetime.now(), "$gt": datetime.now().replace(year = datetime.now().year - 1)}
             }
         }, {
-            "$group": {
+            "$project": {
                 "_id": "$polizas.siniestros.id_siniestro",
-                "nombre": {"$first": "$nombre"},
-                "apellido": {"$first": "$apellido"},
-                "fecha": {"$first": "$polizas.siniestros.fecha"}
+                "nombre": "$nombre",
+                "apellido": "$apellido",
+                "fecha": "$polizas.siniestros.fecha"
             }
         }
     ])
