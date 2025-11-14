@@ -7,11 +7,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from app.db import get_mongo_collection
 from app.cache import RedisCache
 
-def get_accident_claims_2025(use_cache=True):
+def get_accident_claims_last_year(use_cache=False):
     """
-    Get accident claims from 2025 using Redis cache
+    Get accident claims from the last year using Redis cache
     """
-    cache_key = "query8:accident_claims_2025"
+    cache_key = "query8:accident_claims_last_year"
     cache = RedisCache()
     
     # Try cache first
@@ -23,8 +23,8 @@ def get_accident_claims_2025(use_cache=True):
             
             for r in cached_result:
                 print(
-                    f"Siniestro {r['id_siniestro']} - Fecha: {r['fecha']} - "
-                    f"Cliente: {r['cliente']}"
+                    f"Siniestro {r['_id']} - Fecha: {r['fecha'].strftime("%d/%m/%Y")} - "
+                    f"Cliente: {r['nombre']} {r['apellido']}"
                 )
             
             return cached_result
@@ -32,39 +32,30 @@ def get_accident_claims_2025(use_cache=True):
     # Cache miss - query MongoDB
     print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
-    result = []
 
-    clients = collection.find({
-        "id_cliente": {"$exists": True},
-        "polizas": {"$exists": True}
-    })
+    siniestros = collection.aggregate([
+        { 
+            "$unwind": "$polizas"
+        }, {
+            "$unwind": "$polizas.siniestros"
+        }, {
+            "$match": {
+                "id_cliente": {"$exists": True},
+                "polizas": {"$exists": True},
+                "polizas.siniestros.tipo": {"$eq": "Accidente"},
+                "polizas.siniestros.fecha": {"$lte": datetime.now(), "$gt": datetime.now().replace(year = datetime.now().year - 1)}
+            }
+        }, {
+            "$group": {
+                "_id": "$polizas.siniestros.id_siniestro",
+                "nombre": {"$first": "$nombre"},
+                "apellido": {"$first": "$apellido"},
+                "fecha": {"$first": "$polizas.siniestros.fecha"}
+            }
+        }
+    ])
+    result = [siniestro for siniestro in siniestros]
 
-    for client in clients:
-        nombre = client.get("nombre", "")
-        apellido = client.get("apellido", "")
-
-        for poliza in client.get("polizas", []):
-
-            for siniestro in poliza.get("siniestros", []):
-                if siniestro.get("tipo") != "Accidente":
-                    continue
-
-                fecha_str = siniestro.get("fecha")
-                if not fecha_str:
-                    continue
-
-                try:
-                    fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
-                except ValueError:
-                    continue
-
-                if fecha.year == 2025:
-                    result.append({
-                        "id_siniestro": siniestro.get("id_siniestro"),
-                        "fecha": fecha_str,
-                        "cliente": f"{nombre} {apellido}"
-                    })
-    
     # Store in cache (3 minutes - accident claims change moderately)
     if use_cache:
         cache.set(cache_key, result, ttl=180)
@@ -73,12 +64,12 @@ def get_accident_claims_2025(use_cache=True):
     print(f"Se encontraron {len(result)} siniestros en 2025:")
     for r in result:
         print(
-            f"Siniestro {r['id_siniestro']} - Fecha: {r['fecha']} - "
-            f"Cliente: {r['cliente']}"
+            f"Siniestro {r['_id']} - Fecha: {r['fecha'].strftime("%d/%m/%Y")} - "
+            f"Cliente: {r['nombre']} {r['apellido']}"
         )
 
     return result
 
 
 if __name__ == "__main__":
-    get_accident_claims_2025()
+    get_accident_claims_last_year()

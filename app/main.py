@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
 import os
+import datetime
 
 # Add the parent directory to the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,7 +35,9 @@ def load_csv_to_mongo():
             for record in records:
                 # Extract id_cliente for the query but remove it from the record
                 id_cliente = record.pop("id_cliente")
-                
+                record['fecha_inicio'] = datetime.datetime.strptime(record['fecha_inicio'], "%d/%m/%Y")
+                record['fecha_fin'] = datetime.datetime.strptime(record['fecha_fin'], "%d/%m/%Y")
+
                 # Check if poliza already exists for this client
                 query_filter = {
                     "id_cliente": id_cliente, 
@@ -47,6 +50,7 @@ def load_csv_to_mongo():
             for record in records:
                 # Extract nro_poliza for the query but remove it from the record
                 nro_poliza = record.pop("nro_poliza")
+                record['fecha'] = datetime.datetime.strptime(record['fecha'], "%d/%m/%Y")
                 
                 # Check if siniestro already exists for this poliza
                 query_filter = {
