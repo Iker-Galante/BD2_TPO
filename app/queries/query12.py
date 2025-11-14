@@ -22,7 +22,7 @@ def get_agents_with_claims_count(use_cache=True):
             print("Agentes y cantidad de siniestros asociados:")
             for a in cached_result:
                 print(
-                    f"Agente {a['_id']} - {a['nombre']} {a['apellido']}: "
+                    f"Agente {int(a['_id'])} - {a['nombre']} {a['apellido']}: "
                     f"{a['siniestros_asociados']} siniestros"
                 )
             

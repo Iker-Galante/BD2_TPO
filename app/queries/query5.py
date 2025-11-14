@@ -23,7 +23,7 @@ def get_active_agents_with_assigned_policies_count(use_cache=True):
             print("Agentes activos con cantidad de pólizas asignadas:")
             for r in cached_result:
                 print(
-                    f"Agente {r['_id']} - {r['nombre']} {r['apellido']}: "
+                    f"Agente {int(r['_id'])} - {r['nombre']} {r['apellido']}: "
                     f"{r['polizas_asignadas']} pólizas"
                 )
             
@@ -63,7 +63,7 @@ def get_active_agents_with_assigned_policies_count(use_cache=True):
 
     for r in result:
         print(
-            f"Agente {r['_id']} - {r['nombre']} {r['apellido']}: "
+            f"Agente {int(r['_id'])} - {r['nombre']} {r['apellido']}: "
             f"{r['polizas_asignadas']} pólizas"
         )
 
