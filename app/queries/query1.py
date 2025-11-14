@@ -36,10 +36,7 @@ def get_active_clients(use_cache=True):
     # Query for clients where activo is True AND id_cliente exists (to filter only client documents)
     active_clients = collection.find({"activo": True, "id_cliente": {"$exists": True}})
     
-    result = []
-    for client in active_clients:
-        client['_id'] = str(client['_id'])
-        result.append(client)
+    result = [client for client in active_clients]
     
     # Store in cache (5 minutes TTL)
     if use_cache:
