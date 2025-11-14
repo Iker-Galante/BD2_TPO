@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 from app.db import get_mongo_collection
 from app.cache import RedisCache
 
-def get_accident_claims_last_year(use_cache=False):
+def get_accident_claims_last_year(use_cache=True):
     """
     Get accident claims from the last year using Redis cache
     """
@@ -23,7 +23,7 @@ def get_accident_claims_last_year(use_cache=False):
             
             for r in cached_result:
                 print(
-                    f"Siniestro {r['_id']} - Fecha: {r['fecha'].strftime("%d/%m/%Y")} - "
+                    f"Siniestro {r['_id']} - Fecha: {datetime.fromisoformat(r['fecha']).strftime("%d/%m/%Y")} - "
                     f"Cliente: {r['nombre']} {r['apellido']}"
                 )
             
