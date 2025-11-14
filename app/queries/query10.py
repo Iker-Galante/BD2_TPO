@@ -22,10 +22,10 @@ def get_suspended_policies(use_cache=True):
             
             for r in cached_result:
                 print(
-                    f"Poliza {r['nro_poliza']} - "
+                    f"Poliza {r['_id']} - "
                     f"Estado poliza: {r['estado_poliza']} - "
-                    f"Cliente {r['id_cliente']}: {r['cliente']} - "
-                    f"Estado cliente: {r['estado_cliente']}"
+                    f"Cliente {r['id_cliente']}: {r['nombre']} {r['apellido']} - "
+                    f"Estado cliente: { "Activo" if r['cliente_activo'] else "Inactivo"}"
                 )
             
             return cached_result
@@ -35,28 +35,28 @@ def get_suspended_policies(use_cache=True):
     collection = get_mongo_collection()
     result = []
 
-    clients = collection.find({
-        "id_cliente": {"$exists": True},
-        "polizas": {"$exists": True}
-    })
+    polizas = collection.aggregate([
+        {
+            "$unwind": "$polizas"
+        },  {
+            "$match": {
+                "id_cliente": {"$exists": True},
+                "polizas": {"$exists": True},
+                "polizas.estado": "Suspendida"
+            }
+        },  {
+            "$project": {
+                "_id": "$polizas.nro_poliza",
+                "cliente_activo": "$activo",
+                "estado_poliza": "$polizas.estado",
+                "nombre": "$nombre",
+                "apellido": "$apellido",
+                "id_cliente": "$id_cliente"
+            }
+        }
+    ])
 
-    for client in clients:
-        nombre = client.get("nombre", "")
-        apellido = client.get("apellido", "")
-        estado_cliente = (
-            "Activo" if client.get("activo") is True
-            else "Inactivo"
-        )
-
-        for poliza in client.get("polizas", []):
-            if poliza.get("estado") == "Suspendida":
-                result.append({
-                    "nro_poliza": poliza.get("nro_poliza"),
-                    "estado_poliza": poliza.get("estado"),
-                    "id_cliente": client.get("id_cliente"),
-                    "cliente": f"{nombre} {apellido}",
-                    "estado_cliente": estado_cliente
-                })
+    result = [poliza for poliza in polizas]
     
     # Store in cache (8 minutes)
     if use_cache:
@@ -66,10 +66,10 @@ def get_suspended_policies(use_cache=True):
     print(f"Se encontraron {len(result)} pólizas suspendidas:")
     for r in result:
         print(
-            f"Poliza {r['nro_poliza']} - "
+            f"Poliza {r['_id']} - "
             f"Estado poliza: {r['estado_poliza']} - "
-            f"Cliente {r['id_cliente']}: {r['cliente']} - "
-            f"Estado cliente: {r['estado_cliente']}"
+            f"Cliente {r['id_cliente']}: {r['nombre']} {r['apellido']} - "
+            f"Estado cliente: { "Activo" if r['cliente_activo'] else "Inactivo"}"
         )
 
     return result
