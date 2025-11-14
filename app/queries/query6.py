@@ -21,8 +21,8 @@ def get_expired_policies(use_cache=True):
             
             for r in cached_result:
                 print(
-                    f"Poliza {r['nro_poliza']} ({r['tipo']}) - "
-                    f"Estado: {r['estado']} - Cliente: {r['cliente']}"
+                    f"Poliza {r['_id']} ({r['tipo']}) - "
+                    f"Estado: {r['estado']} - Cliente: {r['nombre']} {r['apellido']}"
                 )
             
             return cached_result
@@ -32,23 +32,24 @@ def get_expired_policies(use_cache=True):
     collection = get_mongo_collection()
     result = []
 
-    clients = collection.find({
-        "id_cliente": {"$exists": True},
-        "polizas": {"$exists": True}
-    })
+    clients = collection.aggregate([{
+        "$unwind": "$polizas"
+    }, {
+        "$match": {
+            "id_cliente": {"$exists": True},
+            "polizas.estado": {"$eq": "Vencida"}
+        }
+    }, {
+        "$group": {
+            "_id": "$polizas.nro_poliza",
+            "tipo": {"$first": "$polizas.tipo"},
+            "estado": {"$first": "$polizas.estado"},
+            "nombre": {"$first": "$nombre"},
+            "apellido": {"$first": "$apellido"}
+        }
+    }])
 
-    for client in clients:
-        nombre = client.get("nombre", "")
-        apellido = client.get("apellido", "")
-
-        for poliza in client.get("polizas", []):
-            if poliza.get("estado") == "Vencida":
-                result.append({
-                    "nro_poliza": poliza.get("nro_poliza"),
-                    "tipo": poliza.get("tipo"),
-                    "estado": poliza.get("estado"),
-                    "cliente": f"{nombre} {apellido}"
-                })
+    result = [client for client in clients]
     
     # Store in cache (10 minutes - expired policies don't change)
     if use_cache:
@@ -58,8 +59,8 @@ def get_expired_policies(use_cache=True):
     print(f"Se encontraron {len(result)} pólizas vencidas con nombre de cliente:")
     for r in result:
         print(
-            f"Poliza {r['nro_poliza']} ({r['tipo']}) - "
-            f"Estado: {r['estado']} - Cliente: {r['cliente']}"
+            f"Poliza {r['_id']} ({r['tipo']}) - "
+            f"Estado: {r['estado']} - Cliente: {r['nombre']} {r['apellido']}"
         )
 
     return result
