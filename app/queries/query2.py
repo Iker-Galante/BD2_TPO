@@ -31,26 +31,25 @@ def get_open_claims(use_cache=True):
     # Cache miss - query MongoDB
     print("✗ Cache MISS - Consultando MongoDB...")
     collection = get_mongo_collection()
-    result = []
 
-    clients = collection.find({
-        "id_cliente": {"$exists": True},
-        "polizas": {"$exists": True}
-    })
+    siniestros = collection.aggregate([
+        { "$unwind": "$polizas"},
+        { "$unwind": "$polizas.siniestros"},
+        {
+            "$match": {
+                "polizas.siniestros.estado": "Abierto"
+            }
+        }, {
+            "$project": {
+                "id_siniestro": "$polizas.siniestros.id_siniestro",
+                "tipo": "$polizas.siniestros.tipo",
+                "monto_estimado": "$polizas.siniestros.monto_estimado",
+                "cliente": {"$concat": ["$nombre", " ", "$apellido"]}
+            }
+        }
+    ])
 
-    for client in clients:
-        nombre = client.get("nombre", "")
-        apellido = client.get("apellido", "")
-
-        for poliza in client.get("polizas", []):
-            for siniestro in poliza.get("siniestros", []):
-                if siniestro.get("estado") == "Abierto":
-                    result.append({
-                        "id_siniestro": siniestro.get("id_siniestro"),
-                        "tipo": siniestro.get("tipo"),
-                        "monto_estimado": siniestro.get("monto_estimado"),
-                        "cliente": f"{nombre} {apellido}"
-                    })
+    result = [siniestro for siniestro in siniestros]
 
     # Store in cache (2 minutes TTL - shorter because claims change frequently)
     if use_cache:
