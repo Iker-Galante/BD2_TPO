@@ -203,32 +203,7 @@ Operaciones CRUD completas para gestión de clientes.
 - `list_clients(filter_active=None)`: Listar todos los clientes
 
 **Ejemplo de uso:**
-
-```python
-from app.queries.query13 import create_client, read_client, update_client
-
-# Crear cliente
-nuevo_cliente = {
-    "id_cliente": 1000,
-    "nombre": "Juan",
-    "apellido": "Pérez",
-    "dni": "12345678",
-    "email": "juan@example.com",
-    "telefono": "1234567890",
-    "direccion": "Calle Falsa 123",
-    "ciudad": "Buenos Aires",
-    "provincia": "Buenos Aires",
-    "activo": True
-}
-create_client(nuevo_cliente)
-
-# Leer cliente
-cliente = read_client(1000)
-
-# Actualizar cliente
-update_client(1000, {"telefono": "9876543210"})
-```
-
+  
 Ejecutar ejemplos:
 ```powershell
 python app/queries/query13.py
@@ -245,25 +220,6 @@ Crear y gestionar siniestros (reclamos de seguros).
 
 **Ejemplo de uso:**
 
-```python
-from app.queries.query14 import create_claim, update_claim_status
-
-# Crear siniestro
-nuevo_siniestro = {
-    "nro_poliza": 1,
-    "id_siniestro": 5000,
-    "tipo": "Accidente",
-    "fecha": "12/11/2025",
-    "monto_estimado": 50000.00,
-    "estado": "Abierto",
-    "descripcion": "Colisión frontal en autopista"
-}
-create_claim(nuevo_siniestro)
-
-# Actualizar estado
-update_claim_status(1, 5000, "En Proceso", monto_final=48000.00)
-```
-
 Ejecutar ejemplos:
 ```powershell
 python app/queries/query14.py
@@ -275,36 +231,9 @@ Emitir nuevas pólizas con validación de cliente y agente.
 
 **Funciones disponibles:**
 - `issue_new_policy(policy_data)`: Emitir una nueva póliza
-- `validate_policy_requirements(id_cliente, tipo_poliza)`: Validar requisitos del cliente
 - `get_available_agents()`: Obtener agentes disponibles
 
 **Ejemplo de uso:**
-
-```python
-from app.queries.query15 import issue_new_policy, get_available_agents
-from datetime import datetime, timedelta
-
-# Ver agentes disponibles
-agentes = get_available_agents()
-
-# Emitir póliza
-today = datetime.now()
-one_year_later = today + timedelta(days=365)
-
-nueva_poliza = {
-    "id_cliente": 1,
-    "nro_poliza": 10000,
-    "tipo": "Auto",
-    "fecha_inicio": today.strftime("%d/%m/%Y"),
-    "fecha_fin": one_year_later.strftime("%d/%m/%Y"),
-    "prima_mensual": 5000.00,
-    "cobertura_total": 500000.00,
-    "deducible": 10000.00,
-    "id_agente": 1,
-    "estado": "Activa"
-}
-issue_new_policy(nueva_poliza)
-```
 
 Ejecutar ejemplos:
 ```powershell
