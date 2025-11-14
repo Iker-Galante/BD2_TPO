@@ -129,12 +129,12 @@ def issue_new_policy(policy_data):
     
     # 6. Validate dates
     try:
-        fecha_inicio = datetime.strptime(policy_data['fecha_inicio'], "%d/%m/%Y")
-        fecha_fin = datetime.strptime(policy_data['fecha_fin'], "%d/%m/%Y")
+        policy_data['fecha_inicio'] = datetime.strptime(policy_data['fecha_inicio'], "%d/%m/%Y")
+        policy_data['fecha_fin'] = datetime.strptime(policy_data['fecha_fin'], "%d/%m/%Y")
     except ValueError:
         return {"error": "Invalid date format. Use DD/MM/YYYY"}
     
-    if fecha_fin <= fecha_inicio:
+    if policy_data['fecha_fin'] <= policy_data['fecha_inicio']:
         return {"error": "End date must be after start date"}
     
     # 7. Validate numeric fields

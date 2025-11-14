@@ -95,7 +95,7 @@ def create_claim(claim_data):
     
     # Validate date format
     try:
-        datetime.strptime(claim_data['fecha'], "%d/%m/%Y")
+        claim_data['fecha'] = datetime.strptime(claim_data['fecha'], "%d/%m/%Y")
     except ValueError:
         return {"error": "Invalid date format. Use DD/MM/YYYY"}
     
@@ -165,7 +165,7 @@ def update_claim_status(nro_poliza, id_siniestro, nuevo_estado, monto_final=None
     if fecha_resolucion is not None:
         # Validate date format
         try:
-            datetime.strptime(fecha_resolucion, "%d/%m/%Y")
+            fecha_resolucion = datetime.strptime(fecha_resolucion, "%d/%m/%Y")
             update_op["polizas.$[poliza].siniestros.$[siniestro].fecha_resolucion"] = fecha_resolucion
         except ValueError:
             return {"error": "Invalid date format. Use DD/MM/YYYY"}
@@ -335,7 +335,7 @@ def interactive_abm():
             print(f"Póliza: {claim_data['nro_poliza']}")
             print(f"ID Siniestro: {claim_data['id_siniestro']}")
             print(f"Tipo: {claim_data['tipo']}")
-            print(f"Fecha: {claim_data['fecha']}")
+            print(f"Fecha: {datetime.fromisoformat(claim_data['fecha']).strftime("%d/%m/%Y")}")
             print(f"Monto estimado: ${claim_data['monto_estimado']}")
             print(f"Estado: {claim_data['estado']}")
             if 'descripcion' in claim_data:
@@ -367,7 +367,7 @@ def interactive_abm():
                     for s in result['siniestros']:
                         print(f"\n  ID: {s.get('id_siniestro')}")
                         print(f"  Tipo: {s.get('tipo')}")
-                        print(f"  Fecha: {s.get('fecha')}")
+                        print(f"  Fecha: {s.get('fecha').strftime("%d/%m/%Y")}")
                         print(f"  Monto estimado: ${s.get('monto_estimado')}")
                         print(f"  Estado: {s.get('estado')}")
                         if s.get('descripcion'):
