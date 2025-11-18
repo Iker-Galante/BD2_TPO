@@ -6,6 +6,7 @@ Sistema de gestión de una aseguradora implementado con MongoDB y Redis, que per
 
 - **[RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md)**: Resumen ejecutivo con razonamiento, esquemas y demo del sistema ⭐ **COMIENCE AQUÍ**
 - **[DOCUMENTACION_BASES_DATOS.md](DOCUMENTACION_BASES_DATOS.md)**: Razonamiento técnico detallado de la elección de bases de datos, esquemas lógicos y físicos
+- **[DIAGRAMAS.md](DIAGRAMAS.md)**: Diagramas visuales de arquitectura, flujos de datos y comparación de performance
 - **[DEMO_SISTEMA.md](DEMO_SISTEMA.md)**: Guía completa de demostración del sistema con ejemplos de todas las funcionalidades
 - **[demo_script.py](demo_script.py)**: Script interactivo de demostración automática
 
