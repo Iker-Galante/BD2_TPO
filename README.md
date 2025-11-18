@@ -2,6 +2,13 @@
 
 Sistema de gestión de una aseguradora implementado con MongoDB y Redis, que permite consultar información sobre clientes, pólizas, vehículos, agentes y siniestros.
 
+## 📚 Documentación Completa
+
+- **[RESUMEN_EJECUTIVO.md](RESUMEN_EJECUTIVO.md)**: Resumen ejecutivo con razonamiento, esquemas y demo del sistema ⭐ **COMIENCE AQUÍ**
+- **[DOCUMENTACION_BASES_DATOS.md](DOCUMENTACION_BASES_DATOS.md)**: Razonamiento técnico detallado de la elección de bases de datos, esquemas lógicos y físicos
+- **[DEMO_SISTEMA.md](DEMO_SISTEMA.md)**: Guía completa de demostración del sistema con ejemplos de todas las funcionalidades
+- **[demo_script.py](demo_script.py)**: Script interactivo de demostración automática
+
 ## Características Principales
 
 - **MongoDB**: Base de datos principal con documentos embebidos
@@ -239,6 +246,30 @@ Ejecutar ejemplos:
 ```powershell
 python app/queries/query15.py
 ```
+
+## Demo del Sistema
+
+### Demo Interactiva Automática
+
+Ejecuta una demostración completa del sistema que muestra:
+- Verificación de conexiones (MongoDB y Redis)
+- Overview de datos cargados
+- Comparación de performance (caché vs sin caché)
+- Rankings con Redis Sorted Sets
+- Operaciones ABM (Alta, Baja, Modificación)
+- Estadísticas del caché
+
+```powershell
+python demo_script.py
+```
+
+### Demo Manual Completa
+
+Para una demostración detallada paso a paso, consulta [DEMO_SISTEMA.md](DEMO_SISTEMA.md) que incluye:
+- Configuración inicial del sistema
+- Ejecución de todas las queries (1-15)
+- Ejemplos de casos de uso completos
+- Comandos útiles de Docker, MongoDB y Redis
 
 ## Redis Caching
 
