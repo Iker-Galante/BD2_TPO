@@ -49,7 +49,7 @@ def get_clients_without_active_policies(use_cache=True):
     
     # Store in cache (5 minutes)
     if use_cache:
-        cache.set(cache_key, clients, ttl=300)
+        cache.set(cache_key, result, ttl=300)
         print(f"✓ Almacenados {len(result)} clientes en caché (TTL: 300 segundos)\n")
 
     print(f"Se encontraron {len(result)} clientes sin pólizas activas:")
